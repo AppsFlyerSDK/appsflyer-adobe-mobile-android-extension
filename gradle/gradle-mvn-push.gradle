@@ -70,6 +70,10 @@ afterEvaluate { project ->
         }
     }
 
+    nexusStaging {
+        packageGroup = GROUP //optional if packageGroup == project.getGroup()
+    }
+
     signing {
         required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
         sign configurations.archives

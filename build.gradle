@@ -8,6 +8,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.1.4'
+        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.9.0"
         
 
         // NOTE: Do not place your application dependencies here; they belong
@@ -15,11 +16,27 @@ buildscript {
     }
 }
 
+apply plugin: 'io.codearte.nexus-staging'
+
 allprojects {
     repositories {
         google()
         jcenter()
     }
+}
+
+def getRepositoryUsername() {
+    return hasProperty('ossrhUsername') ? ossrhUsername : ""
+}
+
+def getRepositoryPassword() {
+    return hasProperty('ossrhPassword') ? ossrhPassword : ""
+}
+
+nexusStaging {
+    packageGroup = GROUP //optional if packageGroup == project.getGroup()
+    username = getRepositoryUsername()
+    password = getRepositoryPassword()
 }
 
 task clean(type: Delete) {

@@ -19,10 +19,12 @@ android {
 }
 
 dependencies {
-    implementation project(':adobeextension')
+//    implementation project(':adobeextension')
+
 
     implementation 'com.adobe.marketing.mobile:userprofile:1.+'
     implementation 'com.adobe.marketing.mobile:sdk-core:1.+'
+    implementation 'com.appsflyer:appsflyer-adobe-sdk-extension:1.0'
 
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -36,5 +38,3 @@ dependencies {
 repositories {
     mavenCentral()
 }
-
-apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
