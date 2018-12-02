@@ -2,6 +2,7 @@
 
 
 
+
 # AppsFlyer Android SDK Extension for Adobe Mobile SDK
 
 ## Table of content
@@ -11,6 +12,24 @@
 
 
 ## <a id="installation">  Installation
+
+***Important***:
+When using the AppsFlyer Adobe Extension for Android the `Application Context` must be set using the `setApplication(Application)` API.  for example:
+```java
+@Override  
+public void onCreate() {  
+    super.onCreate();  
+  
+  MobileCore.setApplication(this);  
+  ...
+   try {  
+        AppsFlyerAdobeExtension.setApplication(this);  
+		AppsFlyerAdobeExtension.registerExtension();
+        ...
+    }
+}
+```
+
 
 For instructions on using AppsFlyer's Adobe Mobile SDK Extension please see: https://aep-sdks.gitbook.io/docs/getting-started/create-a-mobile-property
 
@@ -25,7 +44,7 @@ Information on adding the extension to your Android Studio Project is available 
 
 ## <a id="eventTracking"> Event Tracking
 All events that are invoked using the `MobileCore.trackAction(String action, Map<String,String> contextData)` API are automatically tracked to the AppsFlyer Platform as in-app events; For example, calling this API:
-```
+```java
 final Map<String,String> eventMap = new HashMap<>();  
 eventMap.put("currency", "USD");  
 eventMap.put("revenue", "200");  
@@ -39,7 +58,7 @@ will result in a `testAnalyticsAction` event tracked on the AppsFlyer Dashboard 
 
 ## <a id="callbacks"> Extension Callbacks
  Registering for deferred deep link and deep link callbacks:
-```
+```java
 AppsFlyerAdobeExtension.registerAppsFlyerExtensionCallbacks(new AppsFlyerExtensionCallbacksListener() {  
   @Override  
   public void onCallbackReceived(Map<String, String> callback) {  
