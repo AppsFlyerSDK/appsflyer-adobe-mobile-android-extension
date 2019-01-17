@@ -23,7 +23,7 @@ public class MainApplciation extends Application {
         MobileCore.setApplication(this);
         MobileCore.setLogLevel(LoggingMode.DEBUG);
         try {
-            AppsFlyerAdobeExtension.setApplication(this);
+//            AppsFlyerAdobeExtension.setApplication(this);
             AppsFlyerAdobeExtension.registerExtension();
             Identity.registerExtension();
             Lifecycle.registerExtension();

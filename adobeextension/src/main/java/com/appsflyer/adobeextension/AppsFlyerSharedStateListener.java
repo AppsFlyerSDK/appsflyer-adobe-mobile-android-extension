@@ -1,14 +1,13 @@
 package com.appsflyer.adobeextension;
 
 import android.util.Log;
+import java.util.Map;
 
 import com.adobe.marketing.mobile.Event;
 import com.adobe.marketing.mobile.ExtensionApi;
 import com.adobe.marketing.mobile.ExtensionError;
 import com.adobe.marketing.mobile.ExtensionErrorCallback;
 import com.adobe.marketing.mobile.ExtensionListener;
-
-import java.util.Map;
 
 import static com.appsflyer.adobeextension.AppsFlyerAdobeExtension.AFEXTENSION;
 
@@ -32,17 +31,23 @@ public class AppsFlyerSharedStateListener extends ExtensionListener {
 
         if ("com.adobe.module.configuration".equals(stateOwner)) {
             Map<String, Object> configurationSharedState = getParentExtension().getApi().getSharedEventState("com.adobe.module.configuration", event, errorCallback);
-
-            if (configurationSharedState != null) {
-                String appsFlyerDevKey = configurationSharedState.get("appsFlyerDevKey").toString(); //todo validate no null
-                if (appsFlyerDevKey != null) {
-                    boolean isDebug = (boolean) configurationSharedState.get("appsFlyerIsDebug");
-                    getParentExtension().handleConfigurationEvent(appsFlyerDevKey, isDebug);
+            try {
+                if (configurationSharedState != null) {
+                    if (!configurationSharedState.isEmpty() && (configurationSharedState.get("appsFlyerDevKey") != null)) {
+                        String appsFlyerDevKey = configurationSharedState.get("appsFlyerDevKey").toString();
+                        boolean isDebug = false;
+                        if (configurationSharedState.get("appsFlyerIsDebug") != null) {
+                            isDebug = (boolean) configurationSharedState.get("appsFlyerIsDebug");
+                        }
+                        getParentExtension().handleConfigurationEvent(appsFlyerDevKey, isDebug);
+                    } else {
+                        Log.e(AFEXTENSION, "Cannot initialize AppsFlyer tracking without a valid DevKey");
+                    }
                 } else {
-                    Log.e(AFEXTENSION,"Cannot initialize AppsFlyer tracking without a valid DevKey");
+                    Log.e(AFEXTENSION, "Cannot initialize Appsflyer tracking: null configuration json");
                 }
-            } else {
-                Log.e(AFEXTENSION, "Cannot initialize Appsflyer tracking: null configuration json");
+            } catch (NullPointerException npx) {
+                Log.e(AFEXTENSION, "Exception while casting devKey to String: "+npx);
             }
         }
     }

@@ -1,46 +1,56 @@
-
-
-
-
-
 # AppsFlyer Android SDK Extension for Adobe Mobile SDK
 
 ## Table of content
 - [Installation](#installation)
+- [Extension Initialisation](#Initialisation)
 - [Event Tracking](#eventTracking)
 - [Extension Callbacks](#callbacks)
 
 
 ## <a id="installation">  Installation
-
-***Important***:
-When using the AppsFlyer Adobe Extension for Android the `Application Context` must be set using the `setApplication(Application)` API.  for example:
+Import the latest `appsflyer-adobe-sdk-extension` in your build.gradle file:
+```groovy
+dependencies {
+  ...
+  implementation 'com.appsflyer:appsflyer-adobe-sdk-extension:1.1
+}
+``` 
+If missing, add Maven Central Repository to the repositories struct:
+```groovy
+repositories {  
+    mavenCentral()  
+}
+``` 
+## <a id="Initialisation"> Extension Initialisation: 
+Register the AppsFlyer extension from your `Application` class, alongside the Adobe SDK initialisation code: 
 ```java
 @Override  
 public void onCreate() {  
-    super.onCreate();  
+  super.onCreate();  
   
   MobileCore.setApplication(this);  
+  MobileCore.setLogLevel(LoggingMode.DEBUG);  
   ...
-   try {  
-        AppsFlyerAdobeExtension.setApplication(this);  
-		AppsFlyerAdobeExtension.registerExtension();
-        ...
-    }
+  try {
+  ...
+  AppsFlyerAdobeExtension.registerExtension();
+  ...
+  }
 }
 ```
 
 
-For instructions on using AppsFlyer's Adobe Mobile SDK Extension please see: https://aep-sdks.gitbook.io/docs/getting-started/create-a-mobile-property
+For Additional instructions on using AppsFlyer's Adobe Mobile SDK Extension please see: https://aep-sdks.gitbook.io/docs/getting-started/create-a-mobile-property
 
 After adding the extension to the mobile property, Dev Key field and save the extension settings. 
 (Android) App ID is automatically set to the Android Bundle identifier.
 ![AppsFlyerAdobeSDK](https://github.com/AppsFlyerSDK/AppsFlyerAdobeExtension/blob/master/gitresources/img.png)
 
-
 For more information on adding applications to the AppsFlyer dashboard see [here](https://support.appsflyer.com/hc/en-us/articles/207377436-Adding-a-New-App-to-the-AppsFlyer-Dashboard)
 
 Information on adding the extension to your Android Studio Project is available on the Launch dashboard.
+
+***Important***: the `setApplication(Application)` API was ***deprecated*** as it is no longer required.
 
 ## <a id="eventTracking"> Event Tracking
 All events that are invoked using the `MobileCore.trackAction(String action, Map<String,String> contextData)` API are automatically tracked to the AppsFlyer Platform as in-app events; For example, calling this API:
@@ -67,7 +77,7 @@ AppsFlyerAdobeExtension.registerAppsFlyerExtensionCallbacks(new AppsFlyerExtensi
   
   @Override  
   public void onCallbackError(String errorMessage) {  
-	  Log.d("TAG", errorMessage);
+    Log.d("TAG", errorMessage);
     }  
 });
 ``` 
