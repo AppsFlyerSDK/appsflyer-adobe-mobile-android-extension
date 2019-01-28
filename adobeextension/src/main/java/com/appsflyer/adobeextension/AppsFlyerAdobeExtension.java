@@ -1,18 +1,18 @@
 package com.appsflyer.adobeextension;
 
-
 import android.app.Application;
 
+import android.content.Context;
 import android.util.Log;
 import com.adobe.marketing.mobile.*;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.appsflyer.AppsFlyerConversionListener;
 import com.appsflyer.AppsFlyerLib;
-
 
 public class AppsFlyerAdobeExtension extends Extension {
     private final Object executorMutex = new Object();
@@ -37,8 +37,11 @@ public class AppsFlyerAdobeExtension extends Extension {
 
         // Event Binding for generic track events
         getApi().registerEventListener("com.adobe.eventType.generic.track","com.adobe.eventSource.requestContent", AppsFlyerEventListener.class, errorCallback);
+        af_application = (Application) getAdobeContext().getApplicationContext();
     }
 
+    //   Deprecated API - replaced by getAdobeContext() reflection.
+    @Deprecated
     public static void setApplication(Application application) {
         if (application == null) {
             Log.e(AFEXTENSION, "Cannot set null application");
@@ -85,26 +88,25 @@ public class AppsFlyerAdobeExtension extends Extension {
             @Override
             public void run() {
                 if (af_application != null && !didReceiveConfigurations) {
-                    // Set Adobe ID as the AppsFlyer customerUserId as early as possible.
-                    Identity.getExperienceCloudId(new AdobeCallback<String>() {
-                        @Override
-                        public void call(String s) {
-                            if (s != null) {
-                                AppsFlyerLib.getInstance().setCustomerUserId(s);
+                        // Set Adobe ID as the AppsFlyer customerUserId as early as possible.
+                        Identity.getExperienceCloudId(new AdobeCallback<String>() {
+                            @Override
+                            public void call(String s) {
+                                if (s != null) {
+                                    AppsFlyerLib.getInstance().setCustomerUserId(s);
+                                }
                             }
-                        }
-                    });
+                        });
 
-                    AppsFlyerLib.getInstance().setDebugLog(appsFlyerIsDebug);
-                    AppsFlyerLib.getInstance().setExtension("adobe_extension");
-                    AppsFlyerLib.getInstance().init(appsFlyerDevKey, getConversionListener(), af_application.getApplicationContext());
-                    AppsFlyerLib.getInstance().trackAppLaunch(af_application.getApplicationContext(), appsFlyerDevKey);
-                    AppsFlyerLib.getInstance().startTracking(af_application);
-                    didReceiveConfigurations = true;
+                        AppsFlyerLib.getInstance().setDebugLog(appsFlyerIsDebug);
+                        AppsFlyerLib.getInstance().init(appsFlyerDevKey, getConversionListener(), af_application.getApplicationContext());
+                        AppsFlyerLib.getInstance().trackAppLaunch(af_application.getApplicationContext(), appsFlyerDevKey);
+                        AppsFlyerLib.getInstance().startTracking(af_application);
+                        didReceiveConfigurations = true;
                 } else if (af_application == null) {
                     Log.e(AFEXTENSION, "Cannot initialize AppsFlyer tracking without setting AppsFlyerAdobeExtension.setApplication(Application)");
                 } else {
-                    Log.e(AFEXTENSION, "Cannot initialize AppsFlyer tracking: invalid configuration json");
+                    Log.e(AFEXTENSION, "Configurations error");
                 }
             }
         });
@@ -152,5 +154,18 @@ public class AppsFlyerAdobeExtension extends Extension {
             }
             return executor;
         }
+    }
+
+    private Context getAdobeContext() {
+        Context context = null;
+        try {
+            Class cls = Class.forName("com.adobe.marketing.mobile.App");
+            Field appContext = cls.getDeclaredField("appContext");
+            appContext.setAccessible(true);
+            context = (Context)appContext.get(null);
+        } catch (Exception e) {
+            Log.e(AFEXTENSION, "Cannot get Context from com.adobe.marketing.mobile.App", e);
+        }
+        return context;
     }
 }
