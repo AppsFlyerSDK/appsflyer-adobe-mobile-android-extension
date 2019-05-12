@@ -1,3 +1,4 @@
+
 # AppsFlyer Android SDK Extension for Adobe Mobile SDK
 
 ## Table of content
@@ -5,6 +6,7 @@
 - [Extension Initialisation](#Initialisation)
 - [Event Tracking](#eventTracking)
 - [Extension Callbacks](#callbacks)
+- [Attribution Data tracking with Adobe Analytics](#analyticsPostback)
 
 
 ## <a id="installation">  Installation
@@ -12,7 +14,7 @@ Import the latest `appsflyer-adobe-sdk-extension` in your build.gradle file:
 ```groovy
 dependencies {
   ...
-  implementation 'com.appsflyer:appsflyer-adobe-sdk-extension:1.1
+  implementation 'com.appsflyer:appsflyer-adobe-sdk-extension:1.2
 }
 ``` 
 If missing, add Maven Central Repository to the repositories struct:
@@ -82,3 +84,12 @@ AppsFlyerAdobeExtension.registerAppsFlyerExtensionCallbacks(new AppsFlyerExtensi
 });
 ``` 
 The returned map should contain a `callback_type` key to distinguish between `onConversionDataReceived` (deferred deep link) and `onAppOpenAttribution`  (deep link).
+
+## <a id="analyticsPostback"> Attribution Data tracking with Adobe Analytics
+Checking the "Send attribution data to Adobe Analytics" toggle on the [Configurations Dashboard](#Initialisation) will automatically send AppsFlyer Attribution data to Adobe Analytics using the `MobileCore.trackAction()` API - The data will be sent as an "*AppsFlyer Attribution Data*" Action.
+
+All ContextData will be prefixed by the `appsflyer.` prefix, for example: `appsflyer.campaign`, `appsflyer.adset` etc.
+
+*The Adobe Analytics Extension must be added and configured in the client Application.*
+
+**NOTE**: Use this feature if you are only working with ad networks that allow sharing user level data with 3rd party tools.

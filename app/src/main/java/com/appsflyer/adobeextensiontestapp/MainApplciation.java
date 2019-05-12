@@ -4,6 +4,7 @@ import android.app.Application;
 import android.util.Log;
 
 import com.adobe.marketing.mobile.AdobeCallback;
+import com.adobe.marketing.mobile.Analytics;
 import com.adobe.marketing.mobile.Identity;
 import com.adobe.marketing.mobile.Lifecycle;
 import com.adobe.marketing.mobile.LoggingMode;
@@ -23,8 +24,8 @@ public class MainApplciation extends Application {
         MobileCore.setApplication(this);
         MobileCore.setLogLevel(LoggingMode.DEBUG);
         try {
-//            AppsFlyerAdobeExtension.setApplication(this);
             AppsFlyerAdobeExtension.registerExtension();
+            Analytics.registerExtension();
             Identity.registerExtension();
             Lifecycle.registerExtension();
             Signal.registerExtension();
@@ -32,7 +33,7 @@ public class MainApplciation extends Application {
             MobileCore.start(new AdobeCallback() {
                 @Override
                 public void call(Object o) {
-                    MobileCore.configureWithAppID("launch-EN8f1076320a5f4a74aa0e826223d7af2d-development");
+                    MobileCore.configureWithAppID("launch-replaceKey-replaceEnvironment");
                 }
             });
 

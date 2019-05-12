@@ -2,11 +2,10 @@ package com.appsflyer.adobeextension;
 
 import android.app.Application;
 
-import android.content.Context;
 import android.util.Log;
 import com.adobe.marketing.mobile.*;
 
-import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,8 +17,11 @@ public class AppsFlyerAdobeExtension extends Extension {
     private final Object executorMutex = new Object();
     private ExecutorService executor;
     private static boolean didReceiveConfigurations;
+    private static boolean trackAttributionData = false;
     private static AppsFlyerExtensionCallbacksListener afCallbackListener = null;
     static Application af_application;
+    private static final String CALLBACK_TYPE = "callback_type";
+    private static final String IS_FIRST_LAUNCH = "is_first_launch";
 
     static final String AFEXTENSION = "AppsFlyerAdobeExtension";
 
@@ -37,10 +39,11 @@ public class AppsFlyerAdobeExtension extends Extension {
 
         // Event Binding for generic track events
         getApi().registerEventListener("com.adobe.eventType.generic.track","com.adobe.eventSource.requestContent", AppsFlyerEventListener.class, errorCallback);
-        af_application = (Application) getAdobeContext().getApplicationContext();
+
+        af_application = MobileCore.getApplication();
     }
 
-    //   Deprecated API - replaced by getAdobeContext() reflection.
+    //   Deprecated API - replaced by  MobileCore.getApplication();
     @Deprecated
     public static void setApplication(Application application) {
         if (application == null) {
@@ -69,9 +72,7 @@ public class AppsFlyerAdobeExtension extends Extension {
     }
 
     @Override
-    public void onUnregistered() {
-
-    }
+    public void onUnregistered() { }
 
     @Override
     protected void onUnexpectedError(ExtensionUnexpectedError extensionUnexpectedError) {
@@ -83,7 +84,7 @@ public class AppsFlyerAdobeExtension extends Extension {
         return super.getVersion();
     }
 
-    void handleConfigurationEvent(final String appsFlyerDevKey, final boolean appsFlyerIsDebug) {
+    void handleConfigurationEvent(final String appsFlyerDevKey, final boolean appsFlyerIsDebug, final boolean trackAttrData) {
         getExecutor().execute(new Runnable() {
             @Override
             public void run() {
@@ -102,9 +103,11 @@ public class AppsFlyerAdobeExtension extends Extension {
                         AppsFlyerLib.getInstance().init(appsFlyerDevKey, getConversionListener(), af_application.getApplicationContext());
                         AppsFlyerLib.getInstance().trackAppLaunch(af_application.getApplicationContext(), appsFlyerDevKey);
                         AppsFlyerLib.getInstance().startTracking(af_application);
+                        trackAttributionData = trackAttrData;
                         didReceiveConfigurations = true;
+
                 } else if (af_application == null) {
-                    Log.e(AFEXTENSION, "Cannot initialize AppsFlyer tracking without setting AppsFlyerAdobeExtension.setApplication(Application)");
+                    Log.e(AFEXTENSION, "Null application context error");
                 } else {
                     Log.e(AFEXTENSION, "Configurations error");
                 }
@@ -112,12 +115,22 @@ public class AppsFlyerAdobeExtension extends Extension {
         });
     }
 
-    //todo make callback_types constants
     private AppsFlyerConversionListener getConversionListener() {
         return new AppsFlyerConversionListener() {
             @Override
             public void onInstallConversionDataLoaded(Map<String, String> conversionData) {
-                conversionData.put("callback_type", "onConversionDataReceived");
+                conversionData.put(CALLBACK_TYPE, "onConversionDataReceived");
+                if (trackAttributionData) {
+                    String isFirstLaunch = conversionData.get(IS_FIRST_LAUNCH);
+                    if (isFirstLaunch != null) {
+                        if (isFirstLaunch.equals("true")) {
+                            // Send AppsFlyer Attribution data to Adobe Analytics;
+                            MobileCore.trackAction("AppsFlyer Attribution Data", setKeyPrefix(conversionData));
+                        } else {
+                            Log.d(AFEXTENSION,"Skipping attribution data reporting, not first launch");
+                        }
+                    }
+                }
                 afCallbackListener.onCallbackReceived(conversionData);
             }
 
@@ -128,7 +141,7 @@ public class AppsFlyerAdobeExtension extends Extension {
 
             @Override
             public void onAppOpenAttribution(Map<String, String> deepLinkData) {
-                deepLinkData.put("callback_type", "onAppOpenAttribution");
+                deepLinkData.put(CALLBACK_TYPE, "onAppOpenAttribution");
                 afCallbackListener.onCallbackReceived(deepLinkData);
             }
 
@@ -147,6 +160,17 @@ public class AppsFlyerAdobeExtension extends Extension {
         }
     }
 
+    private Map<String,String> setKeyPrefix(Map<String,String> attributionParams) {
+        Map<String,String> newConversionMap = new HashMap<>();
+        for (Map.Entry<String,String> entry : attributionParams.entrySet()) {
+            if (!entry.getKey().equals(CALLBACK_TYPE)) {
+                String newKey = "appsflyer." + entry.getKey();
+                newConversionMap.put(newKey, entry.getValue());
+            }
+        }
+        return newConversionMap;
+    }
+
     private  ExecutorService getExecutor() {
         synchronized (executorMutex) {
             if (executor == null) {
@@ -154,18 +178,5 @@ public class AppsFlyerAdobeExtension extends Extension {
             }
             return executor;
         }
-    }
-
-    private Context getAdobeContext() {
-        Context context = null;
-        try {
-            Class cls = Class.forName("com.adobe.marketing.mobile.App");
-            Field appContext = cls.getDeclaredField("appContext");
-            appContext.setAccessible(true);
-            context = (Context)appContext.get(null);
-        } catch (Exception e) {
-            Log.e(AFEXTENSION, "Cannot get Context from com.adobe.marketing.mobile.App", e);
-        }
-        return context;
     }
 }

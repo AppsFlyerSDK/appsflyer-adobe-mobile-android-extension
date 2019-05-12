@@ -36,10 +36,17 @@ public class AppsFlyerSharedStateListener extends ExtensionListener {
                     if (!configurationSharedState.isEmpty() && (configurationSharedState.get("appsFlyerDevKey") != null)) {
                         String appsFlyerDevKey = configurationSharedState.get("appsFlyerDevKey").toString();
                         boolean isDebug = false;
+                        boolean shouldTrackAttr = false;
+
                         if (configurationSharedState.get("appsFlyerIsDebug") != null) {
                             isDebug = (boolean) configurationSharedState.get("appsFlyerIsDebug");
                         }
-                        getParentExtension().handleConfigurationEvent(appsFlyerDevKey, isDebug);
+
+                        if (configurationSharedState.get("appsFlyerTrackAttrData") != null) {
+                            shouldTrackAttr = (boolean) configurationSharedState.get("appsFlyerTrackAttrData");
+                        }
+
+                        getParentExtension().handleConfigurationEvent(appsFlyerDevKey, isDebug, shouldTrackAttr);
                     } else {
                         Log.e(AFEXTENSION, "Cannot initialize AppsFlyer tracking without a valid DevKey");
                     }
