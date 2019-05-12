@@ -22,7 +22,7 @@ public class AppsFlyerAdobeExtension extends Extension {
     static Application af_application;
     private static final String CALLBACK_TYPE = "callback_type";
     private static final String IS_FIRST_LAUNCH = "is_first_launch";
-
+    static final String APPSFLYER_ATTRIBUTION_DATA = "AppsFlyer Attribution Data";
     static final String AFEXTENSION = "AppsFlyerAdobeExtension";
 
     public AppsFlyerAdobeExtension(final ExtensionApi extensionApi) {
@@ -125,7 +125,7 @@ public class AppsFlyerAdobeExtension extends Extension {
                     if (isFirstLaunch != null) {
                         if (isFirstLaunch.equals("true")) {
                             // Send AppsFlyer Attribution data to Adobe Analytics;
-                            MobileCore.trackAction("AppsFlyer Attribution Data", setKeyPrefix(conversionData));
+                            MobileCore.trackAction(APPSFLYER_ATTRIBUTION_DATA, setKeyPrefix(conversionData));
                         } else {
                             Log.d(AFEXTENSION,"Skipping attribution data reporting, not first launch");
                         }

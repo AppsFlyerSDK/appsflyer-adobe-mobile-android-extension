@@ -26,6 +26,12 @@ public class AppsFlyerEventListener extends ExtensionListener {
             Map<String,Object> valuesMap = new HashMap<>();
 
             if (eventName != null) {
+                // Discard if event is "AppsFlyer Attribution Data" event.
+                if (eventName.equals(AppsFlyerAdobeExtension.APPSFLYER_ATTRIBUTION_DATA)) {
+                    Log.d(AFEXTENSION, "Discarding event binding for AppsFlyer Attribution Data event");
+                    return;
+                }
+
                 if (nestedData != null) {
                     try {
                         valuesMap = (Map<String, Object>) nestedData;
