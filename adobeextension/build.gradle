@@ -5,8 +5,8 @@ android {
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 28
-        versionCode 2
-        versionName "1.1"
+        versionCode 3
+        versionName "1.2"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -21,7 +21,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.appsflyer:af-android-sdk:4.8.19@aar'
+    implementation 'com.appsflyer:af-android-sdk:4.9.0@aar'
     compileOnly 'com.adobe.marketing.mobile:userprofile:1.+'
     compileOnly 'com.adobe.marketing.mobile:sdk-core:1.+'
 
