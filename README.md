@@ -14,7 +14,7 @@ Import the latest `appsflyer-adobe-sdk-extension` in your build.gradle file:
 ```groovy
 dependencies {
   ...
-  implementation 'com.appsflyer:appsflyer-adobe-sdk-extension:1.2
+  implementation 'com.appsflyer:appsflyer-adobe-sdk-extension:1.3
 }
 ``` 
 If missing, add Maven Central Repository to the repositories struct:
