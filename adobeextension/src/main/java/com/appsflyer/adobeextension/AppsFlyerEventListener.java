@@ -11,48 +11,83 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.appsflyer.adobeextension.AppsFlyerAdobeExtension.AFEXTENSION;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeExtension.eventSetting;
 
 public class AppsFlyerEventListener extends ExtensionListener {
+
+    // trackAction() || trackState()
+    private static final String ACTION = "action";
+    private static final String STATE = "state";
+
+    /* Event types from adobe dashboard */
+    private static final String TRACK_ALL_EVENTS = "all";
+    private static final String TRACK_ACTION_EVENTS = "actions";
+    private static final String TRACK_STATE_EVENTS = "states";
+    private static final String TRACK_NO_EVENTS = "none";
+
     protected AppsFlyerEventListener(ExtensionApi extension, String type, String source) {
         super(extension, type, source);
     }
 
     @Override
     public void hear(Event event) {
+
+        boolean trackActionEvent = eventSetting == TRACK_ALL_EVENTS || eventSetting == TRACK_ACTION_EVENTS || eventSetting == null;
+        boolean trackStateEvent  = eventSetting == TRACK_ALL_EVENTS || eventSetting == TRACK_STATE_EVENTS;
+
+        if(eventSetting == TRACK_NO_EVENTS){
+            return;
+        }
+
         if (event.getType().equals("com.adobe.eventtype.generic.track") && event.getSource().equals("com.adobe.eventsource.requestcontent")) {
             Map<String,Object> eventData = event.getEventData();
             Object nestedData = eventData.get("contextdata");
-            Object eventName = eventData.get("action");
-            Map<String,Object> valuesMap = new HashMap<>();
+            Object actionEventName = eventData.get(ACTION);
+            Object stateEventName = eventData.get(STATE);
+            boolean is_action_event = actionEventName != null;
+            boolean is_state_event = stateEventName != null;
 
-            if (eventName != null) {
+            if (trackActionEvent && is_action_event) {
                 // Discard if event is "AppsFlyer Attribution Data" event.
-                if (eventName.equals(AppsFlyerAdobeExtension.APPSFLYER_ATTRIBUTION_DATA)) {
+                if (actionEventName.equals(AppsFlyerAdobeExtension.APPSFLYER_ATTRIBUTION_DATA)) {
                     Log.d(AFEXTENSION, "Discarding event binding for AppsFlyer Attribution Data event");
                     return;
                 }
 
-                if (nestedData != null) {
-                    try {
-                        valuesMap = (Map<String, Object>) nestedData;
-                        String revenue = (String)valuesMap.get("revenue");
-                        if (revenue != null) {
-                            valuesMap.put("af_revenue", revenue);
-                            String currency = (String)valuesMap.get("currency");
-                            if (currency != null) {
-                                valuesMap.put("af_currency", currency);
-                            }
-                        }
-                    } catch (Exception ex) {
-                        Log.e(AFEXTENSION,"Error casting contextdata: "+ex.toString());
-                    }
-                }
                 if (AppsFlyerAdobeExtension.af_application != null) {
-                    AppsFlyerLib.getInstance().trackEvent(AppsFlyerAdobeExtension.af_application, eventName.toString(), valuesMap);
+                    AppsFlyerLib.getInstance().trackEvent(AppsFlyerAdobeExtension.af_application, actionEventName.toString(), getAppsFlyerEventMap(nestedData));
                 } else {
                     Log.e(AFEXTENSION, "Application is null, please set Application using AppsFlyerAdobeExtension.setApplication(this);");
                 }
+            } else if(trackStateEvent && is_state_event){
+                AppsFlyerLib.getInstance().trackEvent(AppsFlyerAdobeExtension.af_application, stateEventName.toString(), getAppsFlyerEventMap(nestedData));
             }
         }
     }
+
+    /**
+     * Convert eventData.get("contextdata") to AF event Map<String, Object>
+     * @param nestedData eventData.get("contextdata")
+     * @return map - Map<String, Object>
+     */
+    private static Map<String, Object> getAppsFlyerEventMap(Object nestedData){
+        Map<String,Object> map = new HashMap<>();
+        if (nestedData != null) {
+            try {
+                map = (Map<String, Object>) nestedData;
+                String revenue = (String)map.get("revenue");
+                if (revenue != null) {
+                    map.put("af_revenue", revenue);
+                    String currency = (String)map.get("currency");
+                    if (currency != null) {
+                        map.put("af_currency", currency);
+                    }
+                }
+            } catch (Exception ex) {
+                Log.e(AFEXTENSION,"Error casting contextdata: " + ex.toString());
+            }
+        }
+        return map;
+    }
+
 }

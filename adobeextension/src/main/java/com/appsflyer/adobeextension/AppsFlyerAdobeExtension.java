@@ -18,6 +18,7 @@ public class AppsFlyerAdobeExtension extends Extension {
     private ExecutorService executor;
     private static boolean didReceiveConfigurations;
     private static boolean trackAttributionData = false;
+    public static String eventSetting = null;
     private static AppsFlyerExtensionCallbacksListener afCallbackListener = null;
     static Application af_application;
     private static final String CALLBACK_TYPE = "callback_type";
@@ -84,7 +85,7 @@ public class AppsFlyerAdobeExtension extends Extension {
         return super.getVersion();
     }
 
-    void handleConfigurationEvent(final String appsFlyerDevKey, final boolean appsFlyerIsDebug, final boolean trackAttrData) {
+    void handleConfigurationEvent(final String appsFlyerDevKey, final boolean appsFlyerIsDebug, final boolean trackAttrData, final String inAppEventSetting) {
         getExecutor().execute(new Runnable() {
             @Override
             public void run() {
@@ -105,6 +106,7 @@ public class AppsFlyerAdobeExtension extends Extension {
                         AppsFlyerLib.getInstance().startTracking(af_application);
                         trackAttributionData = trackAttrData;
                         didReceiveConfigurations = true;
+                        eventSetting = inAppEventSetting;
 
                 } else if (af_application == null) {
                     Log.e(AFEXTENSION, "Null application context error");
