@@ -33,7 +33,7 @@ public class MainApplciation extends Application {
             MobileCore.start(new AdobeCallback() {
                 @Override
                 public void call(Object o) {
-                    MobileCore.configureWithAppID("launch-replaceKey-replaceEnvironment");
+                    MobileCore.configureWithAppID("launch-key");
                 }
             });
 

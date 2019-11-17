@@ -1,23 +1,30 @@
 package com.appsflyer.adobeextension;
 
 import android.app.Application;
-
 import android.util.Log;
-import com.adobe.marketing.mobile.*;
+
+import com.adobe.marketing.mobile.AdobeCallback;
+import com.adobe.marketing.mobile.Extension;
+import com.adobe.marketing.mobile.ExtensionApi;
+import com.adobe.marketing.mobile.ExtensionError;
+import com.adobe.marketing.mobile.ExtensionErrorCallback;
+import com.adobe.marketing.mobile.ExtensionUnexpectedError;
+import com.adobe.marketing.mobile.Identity;
+import com.adobe.marketing.mobile.MobileCore;
+import com.appsflyer.AppsFlyerConversionListener;
+import com.appsflyer.AppsFlyerLib;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.appsflyer.AppsFlyerConversionListener;
-import com.appsflyer.AppsFlyerLib;
-
 public class AppsFlyerAdobeExtension extends Extension {
     private final Object executorMutex = new Object();
     private ExecutorService executor;
     private static boolean didReceiveConfigurations;
     private static boolean trackAttributionData = false;
+    public static String eventSetting = null;
     private static AppsFlyerExtensionCallbacksListener afCallbackListener = null;
     static Application af_application;
     private static final String CALLBACK_TYPE = "callback_type";
@@ -84,7 +91,7 @@ public class AppsFlyerAdobeExtension extends Extension {
         return super.getVersion();
     }
 
-    void handleConfigurationEvent(final String appsFlyerDevKey, final boolean appsFlyerIsDebug, final boolean trackAttrData) {
+    void handleConfigurationEvent(final String appsFlyerDevKey, final boolean appsFlyerIsDebug, final boolean trackAttrData, final String inAppEventSetting) {
         getExecutor().execute(new Runnable() {
             @Override
             public void run() {
@@ -104,7 +111,8 @@ public class AppsFlyerAdobeExtension extends Extension {
                         AppsFlyerLib.getInstance().trackAppLaunch(af_application.getApplicationContext(), appsFlyerDevKey);
                         AppsFlyerLib.getInstance().startTracking(af_application);
                         trackAttributionData = trackAttrData;
-                        didReceiveConfigurations = true;
+                        eventSetting = inAppEventSetting;
+                    didReceiveConfigurations = true;
 
                 } else if (af_application == null) {
                     Log.e(AFEXTENSION, "Null application context error");
