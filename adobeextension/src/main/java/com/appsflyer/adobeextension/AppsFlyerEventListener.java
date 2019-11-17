@@ -32,10 +32,10 @@ public class AppsFlyerEventListener extends ExtensionListener {
     @Override
     public void hear(Event event) {
 
-        boolean trackActionEvent = eventSetting == TRACK_ALL_EVENTS || eventSetting == TRACK_ACTION_EVENTS || eventSetting == null;
-        boolean trackStateEvent  = eventSetting == TRACK_ALL_EVENTS || eventSetting == TRACK_STATE_EVENTS;
+        boolean trackActionEvent = eventSetting.equals(TRACK_ALL_EVENTS) || eventSetting.equals(TRACK_ACTION_EVENTS);
+        boolean trackStateEvent = eventSetting.equals(TRACK_ALL_EVENTS) || eventSetting.equals(TRACK_STATE_EVENTS);
 
-        if(eventSetting == TRACK_NO_EVENTS){
+        if (eventSetting.equals(TRACK_NO_EVENTS)) {
             return;
         }
 
