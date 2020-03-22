@@ -192,7 +192,11 @@ public class AppsFlyerAdobeExtension extends Extension {
     private static Map<String,String> convertConversionData(Map<String,Object> map) {
         Map<String,String> newMap = new HashMap<>();
         for (Map.Entry<String,Object> entry : map.entrySet()) {
-            newMap.put(entry.getKey(), entry.getValue().toString());
+            if(entry.getValue() != null){
+                newMap.put(entry.getKey(), entry.getValue().toString());
+            } else {
+                newMap.put(entry.getKey(), null);
+            }
         }
 
         return newMap;
