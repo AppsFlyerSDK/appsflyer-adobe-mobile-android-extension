@@ -28,6 +28,7 @@ public class AppsFlyerAdobeExtension extends Extension {
     private static AppsFlyerExtensionCallbacksListener afCallbackListener = null;
     static Application af_application;
     private static final String CALLBACK_TYPE = "callback_type";
+    private static final String APPSFLYER_ID = "appsflyer_id";
     private static final String IS_FIRST_LAUNCH = "is_first_launch";
     static final String APPSFLYER_ATTRIBUTION_DATA = "AppsFlyer Attribution Data";
     static final String AFEXTENSION = "AppsFlyerAdobeExtension";
@@ -126,12 +127,15 @@ public class AppsFlyerAdobeExtension extends Extension {
     private AppsFlyerConversionListener getConversionListener() {
         return new AppsFlyerConversionListener() {
             @Override
-            public void onInstallConversionDataLoaded(Map<String, String> conversionData) {
+            public void onConversionDataSuccess(Map<String, Object> conversionData) {
                 conversionData.put(CALLBACK_TYPE, "onConversionDataReceived");
                 if (trackAttributionData) {
-                    String isFirstLaunch = conversionData.get(IS_FIRST_LAUNCH);
+                    String isFirstLaunch = (String) conversionData.get(IS_FIRST_LAUNCH);
                     if (isFirstLaunch != null) {
                         if (isFirstLaunch.equals("true")) {
+                            // add appsflyer_id to send to MobileCore
+                            conversionData.put(APPSFLYER_ID, AppsFlyerLib.getInstance().getAppsFlyerUID(af_application.getApplicationContext()));
+
                             // Send AppsFlyer Attribution data to Adobe Analytics;
                             MobileCore.trackAction(APPSFLYER_ATTRIBUTION_DATA, setKeyPrefix(conversionData));
                         } else {
@@ -139,11 +143,12 @@ public class AppsFlyerAdobeExtension extends Extension {
                         }
                     }
                 }
-                afCallbackListener.onCallbackReceived(conversionData);
+
+                afCallbackListener.onCallbackReceived(convertConversionData(conversionData));
             }
 
             @Override
-            public void onInstallConversionFailure(String errorMessage) {
+            public void onConversionDataFail(String errorMessage) {
                 afCallbackListener.onCallbackError(errorMessage);
             }
 
@@ -168,15 +173,29 @@ public class AppsFlyerAdobeExtension extends Extension {
         }
     }
 
-    private Map<String,String> setKeyPrefix(Map<String,String> attributionParams) {
+    private Map<String,String> setKeyPrefix(Map<String,Object> attributionParams) {
         Map<String,String> newConversionMap = new HashMap<>();
-        for (Map.Entry<String,String> entry : attributionParams.entrySet()) {
+        for (Map.Entry<String,Object> entry : attributionParams.entrySet()) {
             if (!entry.getKey().equals(CALLBACK_TYPE)) {
                 String newKey = "appsflyer." + entry.getKey();
-                newConversionMap.put(newKey, entry.getValue());
+                newConversionMap.put(newKey, entry.getValue().toString());
             }
         }
         return newConversionMap;
+    }
+
+    /**
+     * Convert conversion data from Map<String,Object> to Map<String,String>
+     * @param map
+     * @return
+     */
+    private static Map<String,String> convertConversionData(Map<String,Object> map) {
+        Map<String,String> newMap = new HashMap<>();
+        for (Map.Entry<String,Object> entry : map.entrySet()) {
+            newMap.put(entry.getKey(), entry.getValue().toString());
+        }
+
+        return newMap;
     }
 
     private  ExecutorService getExecutor() {
