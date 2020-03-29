@@ -38,7 +38,7 @@ public class AppsFlyerAdobeExtension extends Extension {
         ExtensionErrorCallback<ExtensionError> errorCallback = new ExtensionErrorCallback<ExtensionError>() {
             @Override
             public void error(final ExtensionError extensionError) {
-                Log.e(AFEXTENSION, "Error registering listener: "+ extensionError.getErrorName());
+                Log.e(AFEXTENSION, "Error registering listener: " + extensionError.getErrorName());
             }
         };
 
@@ -46,7 +46,7 @@ public class AppsFlyerAdobeExtension extends Extension {
         getApi().registerEventListener("com.adobe.eventType.hub", "com.adobe.eventSource.sharedState", AppsFlyerSharedStateListener.class, errorCallback);
 
         // Event Binding for generic track events
-        getApi().registerEventListener("com.adobe.eventType.generic.track","com.adobe.eventSource.requestContent", AppsFlyerEventListener.class, errorCallback);
+        getApi().registerEventListener("com.adobe.eventType.generic.track", "com.adobe.eventSource.requestContent", AppsFlyerEventListener.class, errorCallback);
 
         af_application = MobileCore.getApplication();
     }
@@ -65,22 +65,23 @@ public class AppsFlyerAdobeExtension extends Extension {
         ExtensionErrorCallback<ExtensionError> errorCallback = new ExtensionErrorCallback<ExtensionError>() {
             @Override
             public void error(final ExtensionError extensionError) {
-                Log.e(AFEXTENSION, "Error registering extension: "+ extensionError.getErrorName());
+                Log.e(AFEXTENSION, "Error registering extension: " + extensionError.getErrorName());
             }
         };
 
         if (!MobileCore.registerExtension(AppsFlyerAdobeExtension.class, errorCallback)) {
-            Log.e(AFEXTENSION, "Failed to register"+AFEXTENSION+"extension");
+            Log.e(AFEXTENSION, "Failed to register" + AFEXTENSION + "extension");
         }
     }
 
     @Override
-    public String getName()  {
+    public String getName() {
         return "com.appsflyer.adobeextension";
     }
 
     @Override
-    public void onUnregistered() { }
+    public void onUnregistered() {
+    }
 
     @Override
     protected void onUnexpectedError(ExtensionUnexpectedError extensionUnexpectedError) {
@@ -97,22 +98,22 @@ public class AppsFlyerAdobeExtension extends Extension {
             @Override
             public void run() {
                 if (af_application != null && !didReceiveConfigurations) {
-                        // Set Adobe ID as the AppsFlyer customerUserId as early as possible.
-                        Identity.getExperienceCloudId(new AdobeCallback<String>() {
-                            @Override
-                            public void call(String s) {
-                                if (s != null) {
-                                    AppsFlyerLib.getInstance().setCustomerUserId(s);
-                                }
+                    // Set Adobe ID as the AppsFlyer customerUserId as early as possible.
+                    Identity.getExperienceCloudId(new AdobeCallback<String>() {
+                        @Override
+                        public void call(String s) {
+                            if (s != null) {
+                                AppsFlyerLib.getInstance().setCustomerUserId(s);
                             }
-                        });
+                        }
+                    });
 
-                        AppsFlyerLib.getInstance().setDebugLog(appsFlyerIsDebug);
-                        AppsFlyerLib.getInstance().init(appsFlyerDevKey, getConversionListener(), af_application.getApplicationContext());
-                        AppsFlyerLib.getInstance().trackAppLaunch(af_application.getApplicationContext(), appsFlyerDevKey);
-                        AppsFlyerLib.getInstance().startTracking(af_application);
-                        trackAttributionData = trackAttrData;
-                        eventSetting = inAppEventSetting;
+                    AppsFlyerLib.getInstance().setDebugLog(appsFlyerIsDebug);
+                    AppsFlyerLib.getInstance().init(appsFlyerDevKey, getConversionListener(), af_application.getApplicationContext());
+                    AppsFlyerLib.getInstance().trackAppLaunch(af_application.getApplicationContext(), appsFlyerDevKey);
+                    AppsFlyerLib.getInstance().startTracking(af_application);
+                    trackAttributionData = trackAttrData;
+                    eventSetting = inAppEventSetting;
                     didReceiveConfigurations = true;
 
                 } else if (af_application == null) {
@@ -130,17 +131,15 @@ public class AppsFlyerAdobeExtension extends Extension {
             public void onConversionDataSuccess(Map<String, Object> conversionData) {
                 conversionData.put(CALLBACK_TYPE, "onConversionDataReceived");
                 if (trackAttributionData) {
-                    String isFirstLaunch = (String) conversionData.get(IS_FIRST_LAUNCH);
-                    if (isFirstLaunch != null) {
-                        if (isFirstLaunch.equals("true")) {
-                            // add appsflyer_id to send to MobileCore
-                            conversionData.put(APPSFLYER_ID, AppsFlyerLib.getInstance().getAppsFlyerUID(af_application.getApplicationContext()));
+                    boolean isFirstLaunch = (Boolean) conversionData.get(IS_FIRST_LAUNCH);
+                    if (isFirstLaunch) {
+                        // add appsflyer_id to send to MobileCore
+                        conversionData.put(APPSFLYER_ID, AppsFlyerLib.getInstance().getAppsFlyerUID(af_application.getApplicationContext()));
 
-                            // Send AppsFlyer Attribution data to Adobe Analytics;
-                            MobileCore.trackAction(APPSFLYER_ATTRIBUTION_DATA, setKeyPrefix(conversionData));
-                        } else {
-                            Log.d(AFEXTENSION,"Skipping attribution data reporting, not first launch");
-                        }
+                        // Send AppsFlyer Attribution data to Adobe Analytics;
+                        MobileCore.trackAction(APPSFLYER_ATTRIBUTION_DATA, setKeyPrefix(conversionData));
+                    } else {
+                        Log.d(AFEXTENSION, "Skipping attribution data reporting, not first launch");
                     }
                 }
 
@@ -173,9 +172,9 @@ public class AppsFlyerAdobeExtension extends Extension {
         }
     }
 
-    private Map<String,String> setKeyPrefix(Map<String,Object> attributionParams) {
-        Map<String,String> newConversionMap = new HashMap<>();
-        for (Map.Entry<String,Object> entry : attributionParams.entrySet()) {
+    private Map<String, String> setKeyPrefix(Map<String, Object> attributionParams) {
+        Map<String, String> newConversionMap = new HashMap<>();
+        for (Map.Entry<String, Object> entry : attributionParams.entrySet()) {
             if (!entry.getKey().equals(CALLBACK_TYPE)) {
                 String newKey = "appsflyer." + entry.getKey();
                 newConversionMap.put(newKey, entry.getValue().toString());
@@ -186,13 +185,14 @@ public class AppsFlyerAdobeExtension extends Extension {
 
     /**
      * Convert conversion data from Map<String,Object> to Map<String,String>
+     *
      * @param map
      * @return
      */
-    private static Map<String,String> convertConversionData(Map<String,Object> map) {
-        Map<String,String> newMap = new HashMap<>();
-        for (Map.Entry<String,Object> entry : map.entrySet()) {
-            if(entry.getValue() != null){
+    private static Map<String, String> convertConversionData(Map<String, Object> map) {
+        Map<String, String> newMap = new HashMap<>();
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            if (entry.getValue() != null) {
                 newMap.put(entry.getKey(), entry.getValue().toString());
             } else {
                 newMap.put(entry.getKey(), null);
@@ -202,7 +202,7 @@ public class AppsFlyerAdobeExtension extends Extension {
         return newMap;
     }
 
-    private  ExecutorService getExecutor() {
+    private ExecutorService getExecutor() {
         synchronized (executorMutex) {
             if (executor == null) {
                 executor = Executors.newSingleThreadExecutor();
