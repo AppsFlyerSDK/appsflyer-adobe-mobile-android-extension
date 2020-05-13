@@ -19,6 +19,15 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.AFEXTENSION;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.APPSFLYER_ATTRIBUTION_DATA;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.APPSFLYER_ENGAGMENT_DATA;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.APPSFLYER_ID;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.CALLBACK_TYPE;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.IS_FIRST_LAUNCH;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.MEDIA_SOURCE;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.SDK_VERSION;
+
 public class AppsFlyerAdobeExtension extends Extension {
     private final Object executorMutex = new Object();
     private ExecutorService executor;
@@ -27,11 +36,6 @@ public class AppsFlyerAdobeExtension extends Extension {
     public static String eventSetting = null;
     private static AppsFlyerExtensionCallbacksListener afCallbackListener = null;
     static Application af_application;
-    private static final String CALLBACK_TYPE = "callback_type";
-    private static final String APPSFLYER_ID = "appsflyer_id";
-    private static final String IS_FIRST_LAUNCH = "is_first_launch";
-    static final String APPSFLYER_ATTRIBUTION_DATA = "AppsFlyer Attribution Data";
-    static final String AFEXTENSION = "AppsFlyerAdobeExtension";
 
     public AppsFlyerAdobeExtension(final ExtensionApi extensionApi) {
         super(extensionApi);
@@ -118,8 +122,6 @@ public class AppsFlyerAdobeExtension extends Extension {
 
                 } else if (af_application == null) {
                     Log.e(AFEXTENSION, "Null application context error");
-                } else {
-                    Log.e(AFEXTENSION, "Configurations error");
                 }
             }
         });
@@ -133,11 +135,13 @@ public class AppsFlyerAdobeExtension extends Extension {
                 if (trackAttributionData) {
                     boolean isFirstLaunch = (Boolean) conversionData.get(IS_FIRST_LAUNCH);
                     if (isFirstLaunch) {
+                        getApi().setSharedEventState(getSaredEventState(conversionData), null, null);
                         // add appsflyer_id to send to MobileCore
                         conversionData.put(APPSFLYER_ID, AppsFlyerLib.getInstance().getAppsFlyerUID(af_application.getApplicationContext()));
-
                         // Send AppsFlyer Attribution data to Adobe Analytics;
                         MobileCore.trackAction(APPSFLYER_ATTRIBUTION_DATA, setKeyPrefix(conversionData));
+
+
                     } else {
                         Log.d(AFEXTENSION, "Skipping attribution data reporting, not first launch");
                     }
@@ -154,6 +158,7 @@ public class AppsFlyerAdobeExtension extends Extension {
             @Override
             public void onAppOpenAttribution(Map<String, String> deepLinkData) {
                 deepLinkData.put(CALLBACK_TYPE, "onAppOpenAttribution");
+                MobileCore.trackAction(APPSFLYER_ENGAGMENT_DATA, setKeyPrefixOnAppOpenAttribution(deepLinkData));
                 afCallbackListener.onCallbackReceived(deepLinkData);
             }
 
@@ -200,6 +205,30 @@ public class AppsFlyerAdobeExtension extends Extension {
         }
 
         return newMap;
+    }
+
+    private Map<String, String> setKeyPrefixOnAppOpenAttribution(Map<String, String> attributionParams) {
+        Map<String, String> newConversionMap = new HashMap<>();
+        for (Map.Entry<String, String> entry : attributionParams.entrySet()) {
+            if (!entry.getKey().equals(CALLBACK_TYPE)) {
+                String newKey = "appsflyer.af_engagement_" + entry.getKey();
+                newConversionMap.put(newKey, entry.getValue());
+            }
+        }
+        return newConversionMap;
+    }
+
+    private Map<String, Object> getSaredEventState(Map<String, Object> conversionData){
+        Map<String, Object> sharedEventState = conversionData;
+        sharedEventState.put(APPSFLYER_ID, AppsFlyerLib.getInstance().getAppsFlyerUID(af_application));
+        sharedEventState.put(SDK_VERSION, AppsFlyerLib.getInstance().getSdkVersion());
+        if(!conversionData.containsKey(MEDIA_SOURCE)){
+            sharedEventState.put(MEDIA_SOURCE, "organic");
+        }
+        sharedEventState.remove(IS_FIRST_LAUNCH);
+        sharedEventState.remove(CALLBACK_TYPE);
+
+        return sharedEventState;
     }
 
     private ExecutorService getExecutor() {
