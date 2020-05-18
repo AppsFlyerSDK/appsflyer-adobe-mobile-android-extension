@@ -5,12 +5,15 @@ import android.util.Log;
 import com.adobe.marketing.mobile.Event;
 import com.adobe.marketing.mobile.ExtensionApi;
 import com.adobe.marketing.mobile.ExtensionListener;
+import com.appsflyer.AFInAppEventParameterName;
 import com.appsflyer.AppsFlyerLib;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.appsflyer.adobeextension.AppsFlyerAdobeExtension.AFEXTENSION;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.AFEXTENSION;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.APPSFLYER_ATTRIBUTION_DATA;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.APPSFLYER_ENGAGMENT_DATA;
 import static com.appsflyer.adobeextension.AppsFlyerAdobeExtension.eventSetting;
 
 public class AppsFlyerEventListener extends ExtensionListener {
@@ -49,7 +52,7 @@ public class AppsFlyerEventListener extends ExtensionListener {
 
             if (trackActionEvent && is_action_event) {
                 // Discard if event is "AppsFlyer Attribution Data" event.
-                if (actionEventName.equals(AppsFlyerAdobeExtension.APPSFLYER_ATTRIBUTION_DATA)) {
+                if (actionEventName.equals(APPSFLYER_ATTRIBUTION_DATA) || actionEventName.equals(APPSFLYER_ENGAGMENT_DATA)) {
                     Log.d(AFEXTENSION, "Discarding event binding for AppsFlyer Attribution Data event");
                     return;
                 }
@@ -77,10 +80,11 @@ public class AppsFlyerEventListener extends ExtensionListener {
                 map = (Map<String, Object>) nestedData;
                 String revenue = (String)map.get("revenue");
                 if (revenue != null) {
-                    map.put("af_revenue", revenue);
+                    map.put(AFInAppEventParameterName.REVENUE, revenue);
                     String currency = (String)map.get("currency");
                     if (currency != null) {
-                        map.put("af_currency", currency);
+                        map.put(AFInAppEventParameterName.CURRENCY, currency);
+
                     }
                 }
             } catch (Exception ex) {

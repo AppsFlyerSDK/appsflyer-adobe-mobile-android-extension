@@ -1,7 +1,6 @@
 package com.appsflyer.adobeextension;
 
 import android.util.Log;
-import java.util.Map;
 
 import com.adobe.marketing.mobile.Event;
 import com.adobe.marketing.mobile.ExtensionApi;
@@ -9,12 +8,18 @@ import com.adobe.marketing.mobile.ExtensionError;
 import com.adobe.marketing.mobile.ExtensionErrorCallback;
 import com.adobe.marketing.mobile.ExtensionListener;
 
-import static com.appsflyer.adobeextension.AppsFlyerAdobeExtension.AFEXTENSION;
+import java.util.Map;
+
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.AFEXTENSION;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.DEV_KEY_CONFIG;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.EVENT_SETTING_CONFIG;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.IS_DEBUG_CONFIG;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.TRACK_ATTR_DATA_CONFIG;
 
 public class AppsFlyerSharedStateListener extends ExtensionListener {
 
     public AppsFlyerSharedStateListener(final ExtensionApi extension, final String type, final String source) {
-        super(extension,source,type);
+        super(extension, source, type);
     }
 
     @Override
@@ -22,7 +27,7 @@ public class AppsFlyerSharedStateListener extends ExtensionListener {
         ExtensionErrorCallback<ExtensionError> errorCallback = new ExtensionErrorCallback<ExtensionError>() {
             @Override
             public void error(final ExtensionError extensionError) {
-                Log.e(AFEXTENSION, "error receiving sharedState event: "+ extensionError.getErrorName());
+                Log.e(AFEXTENSION, "error receiving sharedState event: " + extensionError.getErrorName());
             }
         };
 
@@ -33,22 +38,22 @@ public class AppsFlyerSharedStateListener extends ExtensionListener {
             Map<String, Object> configurationSharedState = getParentExtension().getApi().getSharedEventState("com.adobe.module.configuration", event, errorCallback);
             try {
                 if (configurationSharedState != null) {
-                    if (!configurationSharedState.isEmpty() && (configurationSharedState.get("appsFlyerDevKey") != null)) {
-                        String appsFlyerDevKey = configurationSharedState.get("appsFlyerDevKey").toString();
+                    if (!configurationSharedState.isEmpty() && (configurationSharedState.get(DEV_KEY_CONFIG) != null)) {
+                        String appsFlyerDevKey = configurationSharedState.get(DEV_KEY_CONFIG).toString();
                         String inAppEventSetting = null;
                         boolean isDebug = false;
                         boolean shouldTrackAttr = false;
 
-                        if (configurationSharedState.get("appsFlyerIsDebug") != null) {
-                            isDebug = (boolean) configurationSharedState.get("appsFlyerIsDebug");
+                        if (configurationSharedState.get(IS_DEBUG_CONFIG) != null) {
+                            isDebug = (boolean) configurationSharedState.get(IS_DEBUG_CONFIG);
                         }
 
-                        if (configurationSharedState.get("appsFlyerTrackAttrData") != null) {
-                            shouldTrackAttr = (boolean) configurationSharedState.get("appsFlyerTrackAttrData");
+                        if (configurationSharedState.get(TRACK_ATTR_DATA_CONFIG) != null) {
+                            shouldTrackAttr = (boolean) configurationSharedState.get(TRACK_ATTR_DATA_CONFIG);
                         }
 
-                        if (configurationSharedState.get("inAppEventSetting") != null) {
-                            inAppEventSetting = configurationSharedState.get("inAppEventSetting").toString();
+                        if (configurationSharedState.get(EVENT_SETTING_CONFIG) != null) {
+                            inAppEventSetting = configurationSharedState.get(EVENT_SETTING_CONFIG).toString();
                         }
 
                         getParentExtension().handleConfigurationEvent(appsFlyerDevKey, isDebug, shouldTrackAttr, inAppEventSetting);
@@ -59,14 +64,14 @@ public class AppsFlyerSharedStateListener extends ExtensionListener {
                     Log.e(AFEXTENSION, "Cannot initialize Appsflyer tracking: null configuration json");
                 }
             } catch (NullPointerException npx) {
-                Log.e(AFEXTENSION, "Exception while casting devKey to String: "+npx);
+                Log.e(AFEXTENSION, "Exception while casting devKey to String: " + npx);
             }
         }
     }
 
     @Override
     protected AppsFlyerAdobeExtension getParentExtension() {
-        return (AppsFlyerAdobeExtension)super.getParentExtension();
+        return (AppsFlyerAdobeExtension) super.getParentExtension();
     }
 
     @Override
