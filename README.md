@@ -1,29 +1,41 @@
+<img src="./gitresources/AF Logo_primary logo.png" width="450" >
 
-# AppsFlyer Android SDK Extension for Adobe Mobile SDK
+# appsflyer-adobe-mobile-ios-extension
+
+🛠 In order for us to provide optimal support, we would kindly ask you to submit any issues to support@appsflyer.com
+
+> *When submitting an issue please specify your AppsFlyer sign-up (account) email , your app ID , production steps, logs, code snippets and any additional relevant information.*
 
 ## Table of content
-- [Installation](#installation)
-- [Extension Initialisation](#Initialisation)
-- [Event Tracking](#eventTracking)
-- [Extension Callbacks](#callbacks)
-- [Attribution Data tracking with Adobe Analytics](#analyticsPostback)
+
+- [Adding the SDK to your project](#add-sdk-to-project)
+- [Initializing the SDK](#init-sdk)
+- [Guides](#guides)
+- [API](#api) 
+- [Data Elements](#data-elements)
 
 
-## <a id="installation">  Installation
-Import the latest `appsflyer-adobe-sdk-extension` in your build.gradle file:
+### <a id="plugin-build-for"> This plugin is built for
+    
+- Android AppsFlyer SDK **v5.3.0**
+
+## <a id="add-sdk-to-project"> 📲 Adding the SDK to your project
+
+Add the following to your app's `build.gradle (Module: app)` file:
+
 ```groovy
+repositories {
+    mavenCentral()
+}
+
 dependencies {
-  ...
-  implementation 'com.appsflyer:appsflyer-adobe-sdk-extension:1.3
+...
+    implementation 'com.appsflyer:appsflyer-adobe-sdk-extension:5.+'
 }
-``` 
-If missing, add Maven Central Repository to the repositories struct:
-```groovy
-repositories {  
-    mavenCentral()  
-}
-``` 
-## <a id="Initialisation"> Extension Initialisation: 
+```
+
+## <a id="init-sdk"> 🚀 Initializing the SDK
+    
 Register the AppsFlyer extension from your `Application` class, alongside the Adobe SDK initialisation code: 
 ```java
 @Override  
@@ -41,55 +53,33 @@ public void onCreate() {
 }
 ```
 
+In Addition to adding the init code, the settings inside the launch dashboard must be set.
 
-For Additional instructions on using AppsFlyer's Adobe Mobile SDK Extension please see: https://aep-sdks.gitbook.io/docs/getting-started/create-a-mobile-property
+<img src="./gitresources/LuanchAFInit.png" width="550" >
 
-After adding the extension to the mobile property, Dev Key field and save the extension settings. 
-(Android) App ID is automatically set to the Android Bundle identifier.
-![AppsFlyerAdobeSDK](https://github.com/AppsFlyerSDK/AppsFlyerAdobeExtension/blob/master/gitresources/img.png)
+| Setting  | Description   |
+| -------- | ------------- |
+| AppsFlyer iOS App ID      | Your iTunes [application ID](https://support.appsflyer.com/hc/en-us/articles/207377436-Adding-a-new-app#available-in-the-app-store-google-play-store-windows-phone-store)  (required for iOS only)  |
+| AppsFlyer Dev Key   | Your application [devKey](https://support.appsflyer.com/hc/en-us/articles/211719806-Global-app-settings-#sdk-dev-key) provided by AppsFlyer (required)  |
+| Bind in-app events for    | Bind adobe event to appsflyer in-app events. For more info see the doc [here](/docs/Guides.md#events). |
+| Send attribution data    | Send conversion data from the AppsFlyer SDK to adobe. This is required for data elements. |
+| Debug Mode    | Debug mode - set to `true` for testing only.  |
 
-For more information on adding applications to the AppsFlyer dashboard see [here](https://support.appsflyer.com/hc/en-us/articles/207377436-Adding-a-New-App-to-the-AppsFlyer-Dashboard)
+> Note: For Send attribution data, use this feature if you are only working with ad networks that allow sharing user level data with 3rd party tools.
 
-Information on adding the extension to your Android Studio Project is available on the Launch dashboard.
+## <a id="guides"> 📖 Guides
 
-***Important***: the `setApplication(Application)` API was ***deprecated*** as it is no longer required.
+- [Deep Linking](/docs/Guides.md#deeplinking)
+- [In-App Events](/docs/Guides.md#events)
+- [Data Elements](/docs/Guides.md#data-elements)
+- [Attribution Data tracking with Adobe Analytics](/docs/Guides.md#attr-data)
+- [Deeplink Data tracking with Adobe Analytics](/docs/Guides.md#deeplink-data)
 
-## <a id="eventTracking"> Event Tracking
-All events that are invoked using the `MobileCore.trackAction(String action, Map<String,String> contextData)` API are automatically tracked to the AppsFlyer Platform as in-app events; For example, calling this API:
-```java
-final Map<String,String> eventMap = new HashMap<>();  
-eventMap.put("currency", "USD");  
-eventMap.put("revenue", "200");  
-eventMap.put("freehand", "param");
-
-MobileCore.trackAction("testAnalyticsAction", eventMap);
-```
-will result in a `testAnalyticsAction` event tracked on the AppsFlyer Dashboard with a revenue of 200USD.
-
- `revenue` and `currency` parameters are mapped to `af_revenue` and `af_currency`.
-
-## <a id="callbacks"> Extension Callbacks
- Registering for deferred deep link and deep link callbacks:
-```java
-AppsFlyerAdobeExtension.registerAppsFlyerExtensionCallbacks(new AppsFlyerExtensionCallbacksListener() {  
-  @Override  
-  public void onCallbackReceived(Map<String, String> callback) {  
-        Log.d("TAG", callback.toString());  
-  }  
+## <a id="api"> 📑 API
   
-  @Override  
-  public void onCallbackError(String errorMessage) {  
-    Log.d("TAG", errorMessage);
-    }  
-});
-``` 
-The returned map should contain a `callback_type` key to distinguish between `onConversionDataReceived` (deferred deep link) and `onAppOpenAttribution`  (deep link).
+See the full [API](/docs/API.md) available for this plugin.
 
-## <a id="analyticsPostback"> Attribution Data tracking with Adobe Analytics
-Checking the "Send attribution data to Adobe Analytics" toggle on the [Configurations Dashboard](#Initialisation) will automatically send AppsFlyer Attribution data to Adobe Analytics using the `MobileCore.trackAction()` API - The data will be sent as an "*AppsFlyer Attribution Data*" Action.
 
-All ContextData will be prefixed by the `appsflyer.` prefix, for example: `appsflyer.campaign`, `appsflyer.adset` etc.
-
-*The Adobe Analytics Extension must be added and configured in the client Application.*
-
-**NOTE**: Use this feature if you are only working with ad networks that allow sharing user level data with 3rd party tools.
+## <a id="data-elements"> 📂 Data Elements
+  
+Check out the available data elements [here](/docs/DataElements.md).
