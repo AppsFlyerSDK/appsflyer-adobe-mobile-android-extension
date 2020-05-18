@@ -147,24 +147,32 @@ public class AppsFlyerAdobeExtension extends Extension {
                     }
                 }
 
-                afCallbackListener.onCallbackReceived(convertConversionData(conversionData));
+                if (afCallbackListener != null){
+                    afCallbackListener.onCallbackReceived(convertConversionData(conversionData));
+                }
             }
 
             @Override
             public void onConversionDataFail(String errorMessage) {
-                afCallbackListener.onCallbackError(errorMessage);
+                if (afCallbackListener != null){
+                    afCallbackListener.onCallbackError(errorMessage);
+                }
             }
 
             @Override
             public void onAppOpenAttribution(Map<String, String> deepLinkData) {
                 deepLinkData.put(CALLBACK_TYPE, "onAppOpenAttribution");
                 MobileCore.trackAction(APPSFLYER_ENGAGMENT_DATA, setKeyPrefixOnAppOpenAttribution(deepLinkData));
-                afCallbackListener.onCallbackReceived(deepLinkData);
+                if (afCallbackListener != null){
+                    afCallbackListener.onCallbackReceived(deepLinkData);
+                }
             }
 
             @Override
             public void onAttributionFailure(String errorMessage) {
-                afCallbackListener.onCallbackError(errorMessage);
+                if (afCallbackListener != null){
+                    afCallbackListener.onCallbackError(errorMessage);
+                }
             }
         };
     }
@@ -181,8 +189,13 @@ public class AppsFlyerAdobeExtension extends Extension {
         Map<String, String> newConversionMap = new HashMap<>();
         for (Map.Entry<String, Object> entry : attributionParams.entrySet()) {
             if (!entry.getKey().equals(CALLBACK_TYPE)) {
-                String newKey = "appsflyer." + entry.getKey();
-                newConversionMap.put(newKey, entry.getValue().toString());
+                if (entry.getValue() != null) {
+                    String newKey = "appsflyer." + entry.getKey();
+                    newConversionMap.put(newKey, entry.getValue().toString());
+                } else {
+                    String newKey = "appsflyer." + entry.getKey();
+                    newConversionMap.put(newKey, null);
+                }
             }
         }
         return newConversionMap;
@@ -219,7 +232,9 @@ public class AppsFlyerAdobeExtension extends Extension {
     }
 
     private Map<String, Object> getSaredEventState(Map<String, Object> conversionData){
-        Map<String, Object> sharedEventState = conversionData;
+        // copy conversion data
+        Map<String, Object> sharedEventState = new HashMap<>(conversionData);
+
         sharedEventState.put(APPSFLYER_ID, AppsFlyerLib.getInstance().getAppsFlyerUID(af_application));
         sharedEventState.put(SDK_VERSION, AppsFlyerLib.getInstance().getSdkVersion());
         if(!conversionData.containsKey(MEDIA_SOURCE)){
