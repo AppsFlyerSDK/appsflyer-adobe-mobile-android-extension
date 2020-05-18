@@ -13,6 +13,7 @@ import java.util.Map;
 
 import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.AFEXTENSION;
 import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.APPSFLYER_ATTRIBUTION_DATA;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.APPSFLYER_ENGAGMENT_DATA;
 import static com.appsflyer.adobeextension.AppsFlyerAdobeExtension.eventSetting;
 
 public class AppsFlyerEventListener extends ExtensionListener {
@@ -51,7 +52,7 @@ public class AppsFlyerEventListener extends ExtensionListener {
 
             if (trackActionEvent && is_action_event) {
                 // Discard if event is "AppsFlyer Attribution Data" event.
-                if (actionEventName.equals(APPSFLYER_ATTRIBUTION_DATA)) {
+                if (actionEventName.equals(APPSFLYER_ATTRIBUTION_DATA) || actionEventName.equals(APPSFLYER_ENGAGMENT_DATA)) {
                     Log.d(AFEXTENSION, "Discarding event binding for AppsFlyer Attribution Data event");
                     return;
                 }
