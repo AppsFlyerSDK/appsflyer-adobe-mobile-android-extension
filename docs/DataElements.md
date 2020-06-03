@@ -10,8 +10,8 @@ The extension supports the following data elements:
 |  Campaign   |   campaign    | 
 |  Media Source   |   media_source    | 
 |  AppsFlyer SDK Version   |   sdk_version    | 
-|  Agency   |   appsflyer_id    | 
-|  Campaign ID   |   agency    | 
+|  Agency   |   agency    | 
+|  Campaign ID   |   campaign_id    | 
 |  Click Time   |   click_time    | 
 |  Install Time   |   install_time    | 
 |  Ad ID   |   ad_id    | 
