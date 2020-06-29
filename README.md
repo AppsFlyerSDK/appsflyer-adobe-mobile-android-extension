@@ -1,6 +1,6 @@
 <img src="./gitresources/AF Logo_primary logo.png" width="450" >
 
-# appsflyer-adobe-mobile-ios-extension
+# appsflyer-adobe-mobile-android-extension
 
 🛠 In order for us to provide optimal support, we would kindly ask you to submit any issues to support@appsflyer.com
 
@@ -30,9 +30,12 @@ repositories {
 
 dependencies {
 ...
-    implementation 'com.appsflyer:appsflyer-adobe-sdk-extension:5.+'
+implementation 'com.appsflyer:appsflyer-adobe-sdk-extension:5.+'
+implementation 'com.android.installreferrer:installreferrer:1.1'
 }
 ```
+
+> Add the installreferrer library to improve attribution accuracy, protects from install fraud and more.
 
 ## <a id="init-sdk"> 🚀 Initializing the SDK
     
