@@ -36,6 +36,8 @@ public class AppsFlyerAdobeExtension extends Extension {
     public static String eventSetting = null;
     private static AppsFlyerExtensionCallbacksListener afCallbackListener = null;
     static Application af_application;
+    private String ecid;
+    private static Map<String, Object> gcd;
 
     public AppsFlyerAdobeExtension(final ExtensionApi extensionApi) {
         super(extensionApi);
@@ -107,6 +109,7 @@ public class AppsFlyerAdobeExtension extends Extension {
                         @Override
                         public void call(String s) {
                             if (s != null) {
+                                ecid = s;
                                 AppsFlyerLib.getInstance().setCustomerUserId(s);
                             }
                         }
@@ -139,6 +142,11 @@ public class AppsFlyerAdobeExtension extends Extension {
                         // add appsflyer_id to send to MobileCore
                         conversionData.put(APPSFLYER_ID, AppsFlyerLib.getInstance().getAppsFlyerUID(af_application.getApplicationContext()));
                         // Send AppsFlyer Attribution data to Adobe Analytics;
+
+                        if (ecid != null){
+                            conversionData.put("ecid", ecid);
+                        }
+
                         MobileCore.trackAction(APPSFLYER_ATTRIBUTION_DATA, setKeyPrefix(conversionData));
 
 
@@ -150,6 +158,8 @@ public class AppsFlyerAdobeExtension extends Extension {
                 if (afCallbackListener != null){
                     afCallbackListener.onCallbackReceived(convertConversionData(conversionData));
                 }
+
+                gcd = conversionData;
             }
 
             @Override
@@ -162,6 +172,9 @@ public class AppsFlyerAdobeExtension extends Extension {
             @Override
             public void onAppOpenAttribution(Map<String, String> deepLinkData) {
                 deepLinkData.put(CALLBACK_TYPE, "onAppOpenAttribution");
+                if (ecid != null){
+                    deepLinkData.put("ecid", ecid);
+                }
                 MobileCore.trackAction(APPSFLYER_ENGAGMENT_DATA, setKeyPrefixOnAppOpenAttribution(deepLinkData));
                 if (afCallbackListener != null){
                     afCallbackListener.onCallbackReceived(deepLinkData);
@@ -253,5 +266,9 @@ public class AppsFlyerAdobeExtension extends Extension {
             }
             return executor;
         }
+    }
+
+    public static Map<String, Object> getConversionData(){
+        return gcd;
     }
 }
