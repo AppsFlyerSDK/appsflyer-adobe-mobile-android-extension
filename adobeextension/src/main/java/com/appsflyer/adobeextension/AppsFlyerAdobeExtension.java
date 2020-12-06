@@ -117,8 +117,8 @@ public class AppsFlyerAdobeExtension extends Extension {
 
                     AppsFlyerLib.getInstance().setDebugLog(appsFlyerIsDebug);
                     AppsFlyerLib.getInstance().init(appsFlyerDevKey, getConversionListener(), af_application.getApplicationContext());
-                    AppsFlyerLib.getInstance().trackAppLaunch(af_application.getApplicationContext(), appsFlyerDevKey);
-                    AppsFlyerLib.getInstance().startTracking(af_application);
+                    AppsFlyerLib.getInstance().logSession(af_application);
+                    AppsFlyerLib.getInstance().start(af_application);
                     trackAttributionData = trackAttrData;
                     eventSetting = inAppEventSetting;
                     didReceiveConfigurations = true;
