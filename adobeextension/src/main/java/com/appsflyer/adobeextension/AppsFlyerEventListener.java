@@ -58,12 +58,12 @@ public class AppsFlyerEventListener extends ExtensionListener {
                 }
 
                 if (AppsFlyerAdobeExtension.af_application != null) {
-                    AppsFlyerLib.getInstance().trackEvent(AppsFlyerAdobeExtension.af_application, actionEventName.toString(), getAppsFlyerEventMap(nestedData));
+                    AppsFlyerLib.getInstance().logEvent(AppsFlyerAdobeExtension.af_application, actionEventName.toString(), getAppsFlyerEventMap(nestedData));
                 } else {
                     Log.e(AFEXTENSION, "Application is null, please set Application using AppsFlyerAdobeExtension.setApplication(this);");
                 }
             } else if(trackStateEvent && is_state_event){
-                AppsFlyerLib.getInstance().trackEvent(AppsFlyerAdobeExtension.af_application, stateEventName.toString(), getAppsFlyerEventMap(nestedData));
+                AppsFlyerLib.getInstance().logEvent(AppsFlyerAdobeExtension.af_application, stateEventName.toString(), getAppsFlyerEventMap(nestedData));
             }
         }
     }
