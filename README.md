@@ -17,7 +17,7 @@
 
 ### <a id="plugin-build-for"> This plugin is built for
     
-- Android AppsFlyer SDK **v5.4.1**
+- Android AppsFlyer SDK **v6.2.0**
 
 ## <a id="add-sdk-to-project"> 📲 Adding the SDK to your project
 
@@ -30,7 +30,7 @@ repositories {
 
 dependencies {
 ...
-implementation 'com.appsflyer:appsflyer-adobe-sdk-extension:5.+'
+implementation 'com.appsflyer:appsflyer-adobe-sdk-extension:6.+'
 implementation 'com.android.installreferrer:installreferrer:1.1'
 }
 ```
