@@ -21,7 +21,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.appsflyer:af-android-sdk:6.1.1@aar'
+    implementation 'com.appsflyer:af-android-sdk:6.2.0@aar'
     compileOnly 'com.adobe.marketing.mobile:userprofile:1.+'
     compileOnly 'com.adobe.marketing.mobile:sdk-core:1.+'
 
