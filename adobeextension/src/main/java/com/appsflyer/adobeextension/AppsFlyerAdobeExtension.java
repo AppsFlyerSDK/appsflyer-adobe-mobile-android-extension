@@ -16,6 +16,7 @@ import com.adobe.marketing.mobile.MobileCore;
 import com.appsflyer.AppsFlyerConversionListener;
 import com.appsflyer.AppsFlyerLib;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -38,7 +39,7 @@ public class AppsFlyerAdobeExtension extends Extension {
     public static String eventSetting = null;
     private static AppsFlyerExtensionCallbacksListener afCallbackListener = null;
     static Application af_application;
-    static Activity af_activity;
+    static WeakReference<Activity> af_activity;
     private String ecid;
     private static Map<String, Object> gcd;
 
@@ -90,7 +91,8 @@ public class AppsFlyerAdobeExtension extends Extension {
         Application.ActivityLifecycleCallbacks callbacks = new Application.ActivityLifecycleCallbacks() {
             @Override
             public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-                af_activity = activity;
+                af_activity = new WeakReference<Activity>(activity);
+
             }
 
             @Override
@@ -164,9 +166,8 @@ public class AppsFlyerAdobeExtension extends Extension {
 
                     AppsFlyerLib.getInstance().setDebugLog(appsFlyerIsDebug);
                     AppsFlyerLib.getInstance().init(appsFlyerDevKey, getConversionListener(), af_application.getApplicationContext());
-                    AppsFlyerLib.getInstance().logSession(af_application);
                     if(af_activity != null){
-                        AppsFlyerLib.getInstance().start(af_activity);
+                        AppsFlyerLib.getInstance().start(af_activity.get());
                     }
                     trackAttributionData = trackAttrData;
                     eventSetting = inAppEventSetting;
