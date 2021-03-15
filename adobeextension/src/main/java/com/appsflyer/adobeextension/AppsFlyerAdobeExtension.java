@@ -1,6 +1,8 @@
 package com.appsflyer.adobeextension;
 
+import android.app.Activity;
 import android.app.Application;
+import android.os.Bundle;
 import android.util.Log;
 
 import com.adobe.marketing.mobile.AdobeCallback;
@@ -14,6 +16,7 @@ import com.adobe.marketing.mobile.MobileCore;
 import com.appsflyer.AppsFlyerConversionListener;
 import com.appsflyer.AppsFlyerLib;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -36,6 +39,7 @@ public class AppsFlyerAdobeExtension extends Extension {
     public static String eventSetting = null;
     private static AppsFlyerExtensionCallbacksListener afCallbackListener = null;
     static Application af_application;
+    static WeakReference<Activity> af_activity;
     private String ecid;
     private static Map<String, Object> gcd;
 
@@ -55,6 +59,7 @@ public class AppsFlyerAdobeExtension extends Extension {
         getApi().registerEventListener("com.adobe.eventType.generic.track", "com.adobe.eventSource.requestContent", AppsFlyerEventListener.class, errorCallback);
 
         af_application = MobileCore.getApplication();
+        registerCallbacks();
     }
 
     //   Deprecated API - replaced by  MobileCore.getApplication();
@@ -64,6 +69,7 @@ public class AppsFlyerAdobeExtension extends Extension {
             Log.e(AFEXTENSION, "Cannot set null application");
         } else {
             af_application = application;
+            registerCallbacks();
         }
     }
 
@@ -78,6 +84,49 @@ public class AppsFlyerAdobeExtension extends Extension {
         if (!MobileCore.registerExtension(AppsFlyerAdobeExtension.class, errorCallback)) {
             Log.e(AFEXTENSION, "Failed to register" + AFEXTENSION + "extension");
         }
+    }
+
+
+    public static void registerCallbacks(){
+        Application.ActivityLifecycleCallbacks callbacks = new Application.ActivityLifecycleCallbacks() {
+            @Override
+            public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+                af_activity = new WeakReference<Activity>(activity);
+
+            }
+
+            @Override
+            public void onActivityStarted(Activity activity) {
+
+            }
+
+            @Override
+            public void onActivityResumed(Activity activity) {
+
+            }
+
+            @Override
+            public void onActivityPaused(Activity activity) {
+
+            }
+
+            @Override
+            public void onActivityStopped(Activity activity) {
+
+            }
+
+            @Override
+            public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+
+            }
+
+            @Override
+            public void onActivityDestroyed(Activity activity) {
+
+            }
+        };
+
+        af_application.registerActivityLifecycleCallbacks(callbacks);
     }
 
     @Override
@@ -117,8 +166,9 @@ public class AppsFlyerAdobeExtension extends Extension {
 
                     AppsFlyerLib.getInstance().setDebugLog(appsFlyerIsDebug);
                     AppsFlyerLib.getInstance().init(appsFlyerDevKey, getConversionListener(), af_application.getApplicationContext());
-                    AppsFlyerLib.getInstance().logSession(af_application);
-                    AppsFlyerLib.getInstance().start(af_application);
+                    if(af_activity != null){
+                        AppsFlyerLib.getInstance().start(af_activity.get());
+                    }
                     trackAttributionData = trackAttrData;
                     eventSetting = inAppEventSetting;
                     didReceiveConfigurations = true;
