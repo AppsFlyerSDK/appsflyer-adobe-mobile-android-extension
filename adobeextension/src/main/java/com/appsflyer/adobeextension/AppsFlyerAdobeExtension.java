@@ -2,6 +2,7 @@ package com.appsflyer.adobeextension;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -32,6 +33,8 @@ import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.MEDIA_SOURCE;
 import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.SDK_VERSION;
 
 public class AppsFlyerAdobeExtension extends Extension {
+    private static boolean waitForECID = false;
+    private boolean sdkStared = false;
     private final Object executorMutex = new Object();
     private ExecutorService executor;
     private static boolean didReceiveConfigurations;
@@ -87,7 +90,7 @@ public class AppsFlyerAdobeExtension extends Extension {
     }
 
 
-    public static void registerCallbacks(){
+    public static void registerCallbacks() {
         Application.ActivityLifecycleCallbacks callbacks = new Application.ActivityLifecycleCallbacks() {
             @Override
             public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
@@ -148,27 +151,49 @@ public class AppsFlyerAdobeExtension extends Extension {
         return super.getVersion();
     }
 
-    void handleConfigurationEvent(final String appsFlyerDevKey, final boolean appsFlyerIsDebug, final boolean trackAttrData, final String inAppEventSetting) {
+    void handleConfigurationEvent(final String appsFlyerDevKey,
+                                  final boolean appsFlyerIsDebug,
+                                  final boolean trackAttrData,
+                                  final String inAppEventSetting) {
         getExecutor().execute(new Runnable() {
             @Override
             public void run() {
                 if (af_application != null && !didReceiveConfigurations) {
                     // Set Adobe ID as the AppsFlyer customerUserId as early as possible.
+                    AppsFlyerLib.getInstance().setDebugLog(appsFlyerIsDebug);
+                    AppsFlyerLib.getInstance().init(
+                            appsFlyerDevKey,
+                            getConversionListener(),
+                            af_application.getApplicationContext());
+                    // wait for Adobe ID to be sent with the install event
+                    if (waitForECID) {
+                        afLogger("waiting for Experience Cloud Id");
+                        AppsFlyerLib.getInstance().waitForCustomerUserId(true);
+                    }
+
                     Identity.getExperienceCloudId(new AdobeCallback<String>() {
                         @Override
                         public void call(String s) {
                             if (s != null) {
                                 ecid = s;
-                                AppsFlyerLib.getInstance().setCustomerUserId(s);
                             }
+                            String id = ecid != null ? ecid : "";
+                            if (waitForECID && sdkStared) {
+                                Context context = af_activity != null ? af_activity.get() : af_application.getApplicationContext();
+                                AppsFlyerLib.getInstance().setCustomerIdAndLogSession(id, context);
+                            } else {
+                                AppsFlyerLib.getInstance().setCustomerUserId(id);
+                            }
+
                         }
                     });
 
-                    AppsFlyerLib.getInstance().setDebugLog(appsFlyerIsDebug);
-                    AppsFlyerLib.getInstance().init(appsFlyerDevKey, getConversionListener(), af_application.getApplicationContext());
-                    if(af_activity != null){
+
+                    if (af_activity != null) {
                         AppsFlyerLib.getInstance().start(af_activity.get());
+                        sdkStared = true;
                     }
+
                     trackAttributionData = trackAttrData;
                     eventSetting = inAppEventSetting;
                     didReceiveConfigurations = true;
@@ -184,6 +209,7 @@ public class AppsFlyerAdobeExtension extends Extension {
         return new AppsFlyerConversionListener() {
             @Override
             public void onConversionDataSuccess(Map<String, Object> conversionData) {
+                afLogger("called onConversionDataSuccess");
                 conversionData.put(CALLBACK_TYPE, "onConversionDataReceived");
                 if (trackAttributionData) {
                     boolean isFirstLaunch = (Boolean) conversionData.get(IS_FIRST_LAUNCH);
@@ -193,7 +219,7 @@ public class AppsFlyerAdobeExtension extends Extension {
                         conversionData.put(APPSFLYER_ID, AppsFlyerLib.getInstance().getAppsFlyerUID(af_application.getApplicationContext()));
                         // Send AppsFlyer Attribution data to Adobe Analytics;
 
-                        if (ecid != null){
+                        if (ecid != null) {
                             conversionData.put("ecid", ecid);
                         }
 
@@ -205,7 +231,7 @@ public class AppsFlyerAdobeExtension extends Extension {
                     }
                 }
 
-                if (afCallbackListener != null){
+                if (afCallbackListener != null) {
                     afCallbackListener.onCallbackReceived(convertConversionData(conversionData));
                 }
 
@@ -214,33 +240,38 @@ public class AppsFlyerAdobeExtension extends Extension {
 
             @Override
             public void onConversionDataFail(String errorMessage) {
-                if (afCallbackListener != null){
+                afLogger("called onConversionDataFail");
+
+                if (afCallbackListener != null) {
                     afCallbackListener.onCallbackError(errorMessage);
                 }
             }
 
             @Override
             public void onAppOpenAttribution(Map<String, String> deepLinkData) {
+                afLogger("called onAppOpenAttribution");
                 deepLinkData.put(CALLBACK_TYPE, "onAppOpenAttribution");
-                if (ecid != null){
+                if (ecid != null) {
                     deepLinkData.put("ecid", ecid);
                 }
                 MobileCore.trackAction(APPSFLYER_ENGAGMENT_DATA, setKeyPrefixOnAppOpenAttribution(deepLinkData));
-                if (afCallbackListener != null){
+                if (afCallbackListener != null) {
                     afCallbackListener.onCallbackReceived(deepLinkData);
                 }
             }
 
             @Override
             public void onAttributionFailure(String errorMessage) {
-                if (afCallbackListener != null){
+                afLogger("called onAttributionFailure");
+                if (afCallbackListener != null) {
                     afCallbackListener.onCallbackError(errorMessage);
                 }
             }
         };
     }
 
-    public static void registerAppsFlyerExtensionCallbacks(AppsFlyerExtensionCallbacksListener callbacksListener) {
+    public static void registerAppsFlyerExtensionCallbacks(AppsFlyerExtensionCallbacksListener
+                                                                   callbacksListener) {
         if (callbacksListener != null) {
             afCallbackListener = callbacksListener;
         } else {
@@ -283,7 +314,8 @@ public class AppsFlyerAdobeExtension extends Extension {
         return newMap;
     }
 
-    private Map<String, String> setKeyPrefixOnAppOpenAttribution(Map<String, String> attributionParams) {
+    private Map<String, String> setKeyPrefixOnAppOpenAttribution
+            (Map<String, String> attributionParams) {
         Map<String, String> newConversionMap = new HashMap<>();
         for (Map.Entry<String, String> entry : attributionParams.entrySet()) {
             if (!entry.getKey().equals(CALLBACK_TYPE)) {
@@ -294,13 +326,13 @@ public class AppsFlyerAdobeExtension extends Extension {
         return newConversionMap;
     }
 
-    private Map<String, Object> getSaredEventState(Map<String, Object> conversionData){
+    private Map<String, Object> getSaredEventState(Map<String, Object> conversionData) {
         // copy conversion data
         Map<String, Object> sharedEventState = new HashMap<>(conversionData);
 
         sharedEventState.put(APPSFLYER_ID, AppsFlyerLib.getInstance().getAppsFlyerUID(af_application));
         sharedEventState.put(SDK_VERSION, AppsFlyerLib.getInstance().getSdkVersion());
-        if(!conversionData.containsKey(MEDIA_SOURCE)){
+        if (!conversionData.containsKey(MEDIA_SOURCE)) {
             sharedEventState.put(MEDIA_SOURCE, "organic");
         }
         sharedEventState.remove(IS_FIRST_LAUNCH);
@@ -318,7 +350,22 @@ public class AppsFlyerAdobeExtension extends Extension {
         }
     }
 
-    public static Map<String, Object> getConversionData(){
+    private void afLogger(String msg) {
+        Log.d("AppsFlyer_adobe_ext", msg);
+    }
+
+    /**
+     * It is possible to delay the SDK Initialization until the customerUserID (ExperienceCloudId) is set.
+     * This feature makes sure that the SDK doesn't begin functioning until the customerUserID is provided (Automatically by the extension).
+     * If this API is used, all in-app events and any other SDK API calls are discarded, until the customerUserID is set and logged.
+     *
+     * @param wait boolean.
+     */
+    public static void waitForExperienceCloudId(boolean wait) {
+        waitForECID = wait;
+    }
+
+    public static Map<String, Object> getConversionData() {
         return gcd;
     }
 }
