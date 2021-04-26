@@ -13,6 +13,7 @@ public class AppsFlyerAdobeConstants {
     static final String IS_DEBUG_CONFIG = "appsFlyerIsDebug";
     static final String TRACK_ATTR_DATA_CONFIG   = "appsFlyerTrackAttrData";
     static final String EVENT_SETTING_CONFIG = "inAppEventSetting";
+    static final String WAIT_FOR_ECID = "appsFlyerWaitForECID";
 
 
     // Data Elements

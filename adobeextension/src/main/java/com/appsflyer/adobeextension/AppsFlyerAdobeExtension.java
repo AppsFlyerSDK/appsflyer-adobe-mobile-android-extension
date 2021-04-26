@@ -33,7 +33,6 @@ import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.MEDIA_SOURCE;
 import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.SDK_VERSION;
 
 public class AppsFlyerAdobeExtension extends Extension {
-    private static boolean waitForECID = false;
     private boolean sdkStared = false;
     private final Object executorMutex = new Object();
     private ExecutorService executor;
@@ -154,7 +153,7 @@ public class AppsFlyerAdobeExtension extends Extension {
     void handleConfigurationEvent(final String appsFlyerDevKey,
                                   final boolean appsFlyerIsDebug,
                                   final boolean trackAttrData,
-                                  final String inAppEventSetting) {
+                                  final String inAppEventSetting, final boolean waitForECID) {
         getExecutor().execute(new Runnable() {
             @Override
             public void run() {
@@ -177,7 +176,7 @@ public class AppsFlyerAdobeExtension extends Extension {
                             if (s != null) {
                                 ecid = s;
                             }
-                            String id = ecid != null ? ecid : "";
+                            String id = (ecid != null ? ecid : "");
                             if (waitForECID && sdkStared) {
                                 Context context = af_activity != null ? af_activity.get() : af_application.getApplicationContext();
                                 AppsFlyerLib.getInstance().setCustomerIdAndLogSession(id, context);
@@ -255,6 +254,7 @@ public class AppsFlyerAdobeExtension extends Extension {
                     deepLinkData.put("ecid", ecid);
                 }
                 MobileCore.trackAction(APPSFLYER_ENGAGMENT_DATA, setKeyPrefixOnAppOpenAttribution(deepLinkData));
+
                 if (afCallbackListener != null) {
                     afCallbackListener.onCallbackReceived(deepLinkData);
                 }
@@ -263,13 +263,16 @@ public class AppsFlyerAdobeExtension extends Extension {
             @Override
             public void onAttributionFailure(String errorMessage) {
                 afLogger("called onAttributionFailure");
+
                 if (afCallbackListener != null) {
                     afCallbackListener.onCallbackError(errorMessage);
                 }
+
             }
         };
     }
 
+    @Deprecated
     public static void registerAppsFlyerExtensionCallbacks(AppsFlyerExtensionCallbacksListener
                                                                    callbacksListener) {
         if (callbacksListener != null) {
@@ -354,18 +357,10 @@ public class AppsFlyerAdobeExtension extends Extension {
         Log.d("AppsFlyer_adobe_ext", msg);
     }
 
-    /**
-     * It is possible to delay the SDK Initialization until the customerUserID (ExperienceCloudId) is set.
-     * This feature makes sure that the SDK doesn't begin functioning until the customerUserID is provided (Automatically by the extension).
-     * If this API is used, all in-app events and any other SDK API calls are discarded, until the customerUserID is set and logged.
-     *
-     * @param wait boolean.
-     */
-    public static void waitForExperienceCloudId(boolean wait) {
-        waitForECID = wait;
-    }
 
     public static Map<String, Object> getConversionData() {
         return gcd;
     }
+
+
 }

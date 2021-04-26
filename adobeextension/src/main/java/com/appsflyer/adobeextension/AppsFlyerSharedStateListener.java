@@ -15,6 +15,7 @@ import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.DEV_KEY_CONFI
 import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.EVENT_SETTING_CONFIG;
 import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.IS_DEBUG_CONFIG;
 import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.TRACK_ATTR_DATA_CONFIG;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.WAIT_FOR_ECID;
 
 public class AppsFlyerSharedStateListener extends ExtensionListener {
 
@@ -43,6 +44,7 @@ public class AppsFlyerSharedStateListener extends ExtensionListener {
                         String inAppEventSetting = null;
                         boolean isDebug = false;
                         boolean shouldTrackAttr = false;
+                        boolean waitForECID = false;
 
                         if (configurationSharedState.get(IS_DEBUG_CONFIG) != null) {
                             isDebug = (boolean) configurationSharedState.get(IS_DEBUG_CONFIG);
@@ -52,11 +54,15 @@ public class AppsFlyerSharedStateListener extends ExtensionListener {
                             shouldTrackAttr = (boolean) configurationSharedState.get(TRACK_ATTR_DATA_CONFIG);
                         }
 
+                        if (configurationSharedState.get(WAIT_FOR_ECID) != null) {
+                            waitForECID = (boolean) configurationSharedState.get(WAIT_FOR_ECID);
+                        }
+
                         if (configurationSharedState.get(EVENT_SETTING_CONFIG) != null) {
                             inAppEventSetting = configurationSharedState.get(EVENT_SETTING_CONFIG).toString();
                         }
 
-                        getParentExtension().handleConfigurationEvent(appsFlyerDevKey, isDebug, shouldTrackAttr, inAppEventSetting);
+                        getParentExtension().handleConfigurationEvent(appsFlyerDevKey, isDebug, shouldTrackAttr, inAppEventSetting, waitForECID);
                     } else {
                         Log.e(AFEXTENSION, "Cannot initialize AppsFlyer tracking without a valid DevKey");
                     }
