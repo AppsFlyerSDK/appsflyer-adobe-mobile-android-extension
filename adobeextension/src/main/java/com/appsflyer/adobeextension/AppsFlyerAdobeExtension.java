@@ -272,7 +272,6 @@ public class AppsFlyerAdobeExtension extends Extension {
         };
     }
 
-    @Deprecated
     public static void registerAppsFlyerExtensionCallbacks(AppsFlyerExtensionCallbacksListener
                                                                    callbacksListener) {
         if (callbacksListener != null) {
