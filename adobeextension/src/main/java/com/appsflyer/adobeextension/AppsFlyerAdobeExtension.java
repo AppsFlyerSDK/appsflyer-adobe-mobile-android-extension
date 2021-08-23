@@ -38,7 +38,7 @@ public class AppsFlyerAdobeExtension extends Extension {
     private ExecutorService executor;
     private static boolean didReceiveConfigurations;
     private static boolean trackAttributionData = false;
-    public static String eventSetting = null;
+    public static String eventSetting = "";
     private static AppsFlyerExtensionCallbacksListener afCallbackListener = null;
     static Application af_application;
     static WeakReference<Activity> af_activity;
