@@ -264,7 +264,9 @@ public class AppsFlyerAdobeExtension extends Extension {
                     if (isFirstLaunch) {
                         getApi().setSharedEventState(getSaredEventState(conversionData), null, null);
                         // add appsflyer_id to send to MobileCore
-                        conversionData.put(APPSFLYER_ID, AppsFlyerLib.getInstance().getAppsFlyerUID(af_application.getApplicationContext()));
+                        if(af_application != null){
+                            conversionData.put(APPSFLYER_ID, AppsFlyerLib.getInstance().getAppsFlyerUID(af_application.getApplicationContext()));
+                        }
                         // Send AppsFlyer Attribution data to Adobe Analytics;
 
                         if (ecid != null) {
