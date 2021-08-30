@@ -1,5 +1,14 @@
 package com.appsflyer.adobeextension;
 
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.AFEXTENSION;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.APPSFLYER_ATTRIBUTION_DATA;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.APPSFLYER_ENGAGMENT_DATA;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.APPSFLYER_ID;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.CALLBACK_TYPE;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.IS_FIRST_LAUNCH;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.MEDIA_SOURCE;
+import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.SDK_VERSION;
+
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
@@ -23,27 +32,18 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.AFEXTENSION;
-import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.APPSFLYER_ATTRIBUTION_DATA;
-import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.APPSFLYER_ENGAGMENT_DATA;
-import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.APPSFLYER_ID;
-import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.CALLBACK_TYPE;
-import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.IS_FIRST_LAUNCH;
-import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.MEDIA_SOURCE;
-import static com.appsflyer.adobeextension.AppsFlyerAdobeConstants.SDK_VERSION;
-
 public class AppsFlyerAdobeExtension extends Extension {
-    private boolean sdkStared = false;
-    private final Object executorMutex = new Object();
-    private ExecutorService executor;
-    private static boolean didReceiveConfigurations;
-    private static boolean trackAttributionData = false;
-    public static String eventSetting = null;
-    private static AppsFlyerExtensionCallbacksListener afCallbackListener = null;
+    public static String eventSetting = "";
     static Application af_application;
     static WeakReference<Activity> af_activity;
-    private String ecid;
+    private static boolean didReceiveConfigurations;
+    private static boolean trackAttributionData = false;
+    private static AppsFlyerExtensionCallbacksListener afCallbackListener = null;
     private static Map<String, Object> gcd;
+    private final Object executorMutex = new Object();
+    private boolean sdkStared = false;
+    private ExecutorService executor;
+    private String ecid;
 
     public AppsFlyerAdobeExtension(final ExtensionApi extensionApi) {
         super(extensionApi);
@@ -131,6 +131,38 @@ public class AppsFlyerAdobeExtension extends Extension {
         af_application.registerActivityLifecycleCallbacks(callbacks);
     }
 
+    public static void registerAppsFlyerExtensionCallbacks(AppsFlyerExtensionCallbacksListener
+                                                                   callbacksListener) {
+        if (callbacksListener != null) {
+            afCallbackListener = callbacksListener;
+        } else {
+            Log.e(AFEXTENSION, "Cannot register callbacks listener with null object");
+        }
+    }
+
+    /**
+     * Convert conversion data from Map<String,Object> to Map<String,String>
+     *
+     * @param map
+     * @return
+     */
+    private static Map<String, String> convertConversionData(Map<String, Object> map) {
+        Map<String, String> newMap = new HashMap<>();
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            if (entry.getValue() != null) {
+                newMap.put(entry.getKey(), entry.getValue().toString());
+            } else {
+                newMap.put(entry.getKey(), null);
+            }
+        }
+
+        return newMap;
+    }
+
+    public static Map<String, Object> getConversionData() {
+        return gcd;
+    }
+
     @Override
     public String getName() {
         return "com.appsflyer.adobeextension";
@@ -178,7 +210,9 @@ public class AppsFlyerAdobeExtension extends Extension {
                             }
                             String id = (ecid != null ? ecid : "");
                             if (waitForECID && sdkStared) {
-                                Context context = af_activity != null ? af_activity.get() : af_application.getApplicationContext();
+                                Context context = (af_activity != null && af_activity.get() != null)
+                                        ? af_activity.get()
+                                        : af_application.getApplicationContext();
                                 AppsFlyerLib.getInstance().setCustomerIdAndLogSession(id, context);
                             } else {
                                 AppsFlyerLib.getInstance().setCustomerUserId(id);
@@ -188,10 +222,8 @@ public class AppsFlyerAdobeExtension extends Extension {
                     });
 
 
-                    if (af_activity != null) {
-                        AppsFlyerLib.getInstance().start(af_activity.get());
-                        sdkStared = true;
-                    }
+
+                    startSDK();
 
                     trackAttributionData = trackAttrData;
                     eventSetting = inAppEventSetting;
@@ -202,6 +234,23 @@ public class AppsFlyerAdobeExtension extends Extension {
                 }
             }
         });
+    }
+
+    private void startSDK() {
+        if (sdkStared) {
+            return;
+        }
+        if (af_activity != null && af_activity.get() != null) {
+            afLogger("start with Activity context");
+            AppsFlyerLib.getInstance().start(af_activity.get());
+            sdkStared = true;
+        } else if (af_application != null) {
+            afLogger("start with Application context");
+            AppsFlyerLib.getInstance().start(af_application.getApplicationContext());
+            sdkStared = true;
+        } else {
+            afLogger("no context to start the SDK");
+        }
     }
 
     private AppsFlyerConversionListener getConversionListener() {
@@ -272,15 +321,6 @@ public class AppsFlyerAdobeExtension extends Extension {
         };
     }
 
-    public static void registerAppsFlyerExtensionCallbacks(AppsFlyerExtensionCallbacksListener
-                                                                   callbacksListener) {
-        if (callbacksListener != null) {
-            afCallbackListener = callbacksListener;
-        } else {
-            Log.e(AFEXTENSION, "Cannot register callbacks listener with null object");
-        }
-    }
-
     private Map<String, String> setKeyPrefix(Map<String, Object> attributionParams) {
         Map<String, String> newConversionMap = new HashMap<>();
         for (Map.Entry<String, Object> entry : attributionParams.entrySet()) {
@@ -295,25 +335,6 @@ public class AppsFlyerAdobeExtension extends Extension {
             }
         }
         return newConversionMap;
-    }
-
-    /**
-     * Convert conversion data from Map<String,Object> to Map<String,String>
-     *
-     * @param map
-     * @return
-     */
-    private static Map<String, String> convertConversionData(Map<String, Object> map) {
-        Map<String, String> newMap = new HashMap<>();
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            if (entry.getValue() != null) {
-                newMap.put(entry.getKey(), entry.getValue().toString());
-            } else {
-                newMap.put(entry.getKey(), null);
-            }
-        }
-
-        return newMap;
     }
 
     private Map<String, String> setKeyPrefixOnAppOpenAttribution
@@ -354,11 +375,6 @@ public class AppsFlyerAdobeExtension extends Extension {
 
     private void afLogger(String msg) {
         Log.d("AppsFlyer_adobe_ext", msg);
-    }
-
-
-    public static Map<String, Object> getConversionData() {
-        return gcd;
     }
 
 
