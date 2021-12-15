@@ -17,7 +17,7 @@
 
 ### <a id="plugin-build-for"> This plugin is built for
     
-- Android AppsFlyer SDK **v6.3.2**
+- Android AppsFlyer SDK **v6.4.3**
 
 ## <a id="add-sdk-to-project"> 📲 Adding the SDK to your project
 
