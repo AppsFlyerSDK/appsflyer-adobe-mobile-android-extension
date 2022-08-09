@@ -2,6 +2,13 @@
 ## Release Notes
 
 ---
+## 6.8.0
+Release date: 2022-Aug-09
+
+Overview and Highlights:
+
+Update Android native SDK to 6.8.0
+
 ## 6.5.4
 Release date: 2022-Apr-04
 
