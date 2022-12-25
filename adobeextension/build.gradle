@@ -4,7 +4,7 @@ android {
     compileSdkVersion 32
     defaultConfig {
         minSdkVersion 15
-        targetSdkVersion 30
+        targetSdkVersion 32
         versionCode 5
         versionName "1.4"
 
@@ -21,7 +21,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.appsflyer:af-android-sdk:6.8.2@aar'
+    api 'com.appsflyer:af-android-sdk:6.9.4@aar'
     compileOnly 'com.adobe.marketing.mobile:userprofile:1.+'
     compileOnly 'com.adobe.marketing.mobile:sdk-core:1.+'
 
