@@ -25,6 +25,8 @@ import com.adobe.marketing.mobile.Identity;
 import com.adobe.marketing.mobile.MobileCore;
 import com.appsflyer.AppsFlyerConversionListener;
 import com.appsflyer.AppsFlyerLib;
+import com.appsflyer.internal.platform_extension.Plugin;
+import com.appsflyer.internal.platform_extension.PluginInfo;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -190,6 +192,11 @@ public class AppsFlyerAdobeExtension extends Extension {
             @Override
             public void run() {
                 if (af_application != null && !didReceiveConfigurations) {
+                    Map<String, String> additionalParams = new HashMap<String, String>();
+                    additionalParams.put("build_number", String.valueOf(BuildConfig.VERSION_CODE));
+                    PluginInfo pluginInfo = new PluginInfo(Plugin.ADOBE_MOBILE,
+                            BuildConfig.VERSION_NAME, additionalParams);
+                    AppsFlyerLib.getInstance().setPluginInfo(pluginInfo);
                     // Set Adobe ID as the AppsFlyer customerUserId as early as possible.
                     AppsFlyerLib.getInstance().setDebugLog(appsFlyerIsDebug);
                     AppsFlyerLib.getInstance().init(
@@ -220,7 +227,6 @@ public class AppsFlyerAdobeExtension extends Extension {
 
                         }
                     });
-
 
 
                     startSDK();
@@ -264,7 +270,7 @@ public class AppsFlyerAdobeExtension extends Extension {
                     if (isFirstLaunch) {
                         getApi().setSharedEventState(getSaredEventState(conversionData), null, null);
                         // add appsflyer_id to send to MobileCore
-                        if(af_application != null){
+                        if (af_application != null) {
                             conversionData.put(APPSFLYER_ID, AppsFlyerLib.getInstance().getAppsFlyerUID(af_application.getApplicationContext()));
                         }
                         // Send AppsFlyer Attribution data to Adobe Analytics;
