@@ -5,8 +5,10 @@ android {
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 32
-        versionCode 5
-        versionName "1.4"
+        versionCode Integer.parseInt(project.VERSION_CODE)
+        versionName VERSION_NAME
+        buildConfigField "int", "VERSION_CODE", VERSION_CODE
+        buildConfigField "String", "VERSION_NAME", "\"$VERSION_NAME\""
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
