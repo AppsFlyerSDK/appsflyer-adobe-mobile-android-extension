@@ -1,3 +1,6 @@
+variables:
+  GLOBAL_VAR: "A global variable"
+  
 image: ${AF_CI_IMAGE}
 
 stages:
@@ -18,9 +21,9 @@ build:
   rules:
     ## on every push push or when opening an MR from a release branch into master
     - if: '$CI_PIPELINE_SOURCE == "push" || ($CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^releases\/\d+.x.x\/\d+.\d+.x\/(\d+.\d+.\d+)-(rc\d+)/)'
-
-  script:
-    - ./gradlew clean :adobeextension:assembleRelease
-  artifacts:
-    paths:
-      - adobeextension/build/outputs/
+  trigger:
+    include:
+      - project: 'mobile/android-child-pipelines'
+        ref: 'master'
+        file: 'build_adobe_aar.yml
+'
