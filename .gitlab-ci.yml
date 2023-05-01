@@ -1,6 +1,6 @@
 variables:
   GLOBAL_VAR: "A global variable"
-  
+
 image: ${AF_CI_IMAGE}
 
 stages:
@@ -25,5 +25,4 @@ build:
     include:
       - project: 'mobile/android-child-pipelines'
         ref: 'master'
-        file: 'build_adobe_aar.yml
-'
+        file: 'build_adobe_aar.yml'
