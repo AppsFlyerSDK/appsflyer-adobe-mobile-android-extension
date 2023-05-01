@@ -36,6 +36,8 @@ def getRepositoryPassword() {
     return hasProperty('ossrhPassword') ? ossrhPassword : ""
 }
 
+boolean isInPipeline() { return findProperty("RUNNING_IN_PIPELINE") == "true"}
+
 nexusStaging {
     packageGroup = GROUP //optional if packageGroup == project.getGroup()
     username = getRepositoryUsername()

@@ -5,6 +5,7 @@ image: ${AF_CI_IMAGE}
 
 stages:
   - build
+  - deploy
 
 before_script:
   - export GRADLE_USER_HOME=$(pwd)/.gradle
@@ -26,3 +27,16 @@ build:
       - project: 'mobile/android-child-pipelines'
         ref: 'master'
         file: 'build_adobe_aar.yml'
+
+
+## Check if we can build aar file on every push or when opening an MR from a release branch into master
+deploy:
+  stage: deploy
+  rules:
+    ## on every push push or when opening an MR from a release branch into master
+    - if: '($CI_MERGE_REQUEST_APPROVED != "true" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^releases\/\d+.x.x\/\d+.\d+.x\/(\d+.\d+.\d+)-(rc\d+)/)'
+  trigger:
+    include:
+      - project: 'mobile/android-child-pipelines'
+        ref: 'master'
+        file: 'deploy_adobe.yml'

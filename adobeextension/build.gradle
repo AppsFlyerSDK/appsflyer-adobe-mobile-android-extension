@@ -23,7 +23,7 @@ android {
 }
 
 dependencies {
-    api 'com.appsflyer:af-android-sdk:6.10.2@aar'
+    api 'com.appsflyer:af-android-sdk:6.10.3@aar'
     compileOnly 'com.adobe.marketing.mobile:userprofile:1.+'
     compileOnly 'com.adobe.marketing.mobile:sdk-core:1.+'
 
