@@ -38,6 +38,10 @@ def getRepositoryPassword() {
 
 boolean isInPipeline() { return findProperty("RUNNING_IN_PIPELINE") == "true"}
 
+String getPomVersion(){
+    return hasProperty("pluginPomVersion") ? pluginPomVersion : VERSION_NAME
+}
+
 nexusStaging {
     packageGroup = GROUP //optional if packageGroup == project.getGroup()
     username = getRepositoryUsername()

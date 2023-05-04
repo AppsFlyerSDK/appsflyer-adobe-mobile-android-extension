@@ -20,10 +20,6 @@ String getPomArtifactId() {
     return findProperty("RELEASE_TYPE") == "Prod" ? POM_ARTIFACT_ID : POM_ARTIFACT_ID_BETA
 }
 
-String getPomVersion(){
-    return hasProperty("pluginPomVersion") ? pluginPomVersion : VERSION_NAME
-}
-
 
 String getBuildNumber(){
     return hasProperty("pluginBuildNumber") ? pluginBuildNumber : BUILD_NUMBER
