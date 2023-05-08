@@ -14,6 +14,21 @@ def getSnapshotRepositoryUrl() {
     return hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL
             : "https://oss.sonatype.org/content/repositories/snapshots/"
 }
+boolean isInPipeline() { return findProperty("RUNNING_IN_PIPELINE") == "true"}
+
+String getPomArtifactId() {
+    return findProperty("RELEASE_TYPE") == "Prod" ? POM_ARTIFACT_ID : POM_ARTIFACT_ID_BETA
+}
+
+
+String getBuildNumber(){
+    return hasProperty("pluginBuildNumber") ? pluginBuildNumber : BUILD_NUMBER
+}
+
+String getArtifactID(){
+    return hasProperty("pluginArtifactID") ? pluginArtifactID : getPomArtifactId()
+}
+
 
 task androidJavadocs(type: Javadoc) {
     exclude "**/*.orig" // exclude files created by source control
@@ -73,8 +88,8 @@ afterEvaluate {
                 // The coordinates of the library, being set from variables that
                 // we'll set up in a moment
                 groupId GROUP
-                artifactId POM_ARTIFACT_ID
-                version VERSION_NAME
+                artifactId "${getPomArtifactId()}"
+                version "${getPomVersion()}"
 
                 // Two artifacts, the `aar` and the sources
                 // artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
@@ -118,6 +133,12 @@ afterEvaluate {
 
 signing {
     logger("signing")
+    if(isInPipeline()){
+        def signingKeyId = findProperty("ORG_GRADLE_PROJECT_signingKeyId")
+        def signingKey = findProperty("ORG_GRADLE_PROJECT_signingKey")
+        def signingPassword = findProperty("ORG_GRADLE_PROJECT_signingPassword")
+        useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+    }
     sign publishing.publications
 }
 

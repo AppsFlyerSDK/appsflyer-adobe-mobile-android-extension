@@ -1,0 +1,24 @@
+image: ${AF_CI_IMAGE}
+
+stages:
+  - adobe
+
+before_script:
+  - export GRADLE_USER_HOME=$(pwd)/.gradle
+  - chmod +x ./gradlew
+
+cache:
+  key: ${CI_PROJECT_ID}
+  paths:
+    - .gradle/
+
+adobePipeline:
+  stage: adobe
+  rules:
+    ## on every push push or when opening an MR from a release branch into master
+    - if: '$CI_PIPELINE_SOURCE == "push" || ($CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^Releases\/\d+.x.x\/\d+.\d+.x\/(\d+.\d+.\d+)-(rc\d+)/)'
+  trigger:
+    include:
+      - project: 'mobile/android-child-pipelines'
+        ref: 'master'
+        file: 'adobe_android_pipeline.yml'
