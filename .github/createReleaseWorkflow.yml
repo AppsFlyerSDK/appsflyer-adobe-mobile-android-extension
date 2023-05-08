@@ -1,0 +1,39 @@
+name: Create Release
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v[0-9].[0-9]+.[0-9]+' # Push events to matching v*, i.e. v1.0.0, v6.10.3
+
+jobs:
+  release:
+    name: Release New Version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Determine release tag and release branch
+        run: |
+          TAG=$(echo "$GITHUB_REF" | grep -Eo '[0-9]+.[0-9]+.[0-9]+')
+          echo "PLUGIN_VERSION=$TAG" >> $GITHUB_ENV
+          echo "push new release >> $TAG"
+      - name: "Create release"
+        env:
+          TAG: ${GITHUB_REF}
+          TITLE: ${{env.PLUGIN_VERSION}}
+        uses: "actions/github-script@v5"
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          script: |
+            try {
+              await github.rest.repos.createRelease({
+                draft: false,
+                generate_release_notes: false,
+                name: process.env.TITLE,
+                owner: context.repo.owner,
+                prerelease: false,
+                repo: context.repo.repo,
+                tag_name: process.env.TAG
+              });
+            } catch (error) {
+              core.setFailed(error.message);
+            }

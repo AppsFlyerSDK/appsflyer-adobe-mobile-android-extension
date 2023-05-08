@@ -6,9 +6,9 @@ android {
         minSdkVersion 15
         targetSdkVersion 32
         versionCode Integer.parseInt(project.VERSION_CODE)
-        versionName VERSION_NAME
+        versionName getPomVersion()
         buildConfigField "int", "VERSION_CODE", VERSION_CODE
-        buildConfigField "String", "VERSION_NAME", "\"$VERSION_NAME\""
+        buildConfigField "String", "VERSION_NAME", "\"${getPomVersion()}\""
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -23,7 +23,7 @@ android {
 }
 
 dependencies {
-    api 'com.appsflyer:af-android-sdk:6.10.2@aar'
+    api "com.appsflyer:af-android-sdk:$AF_SDK_VERSION"
     compileOnly 'com.adobe.marketing.mobile:userprofile:1.+'
     compileOnly 'com.adobe.marketing.mobile:sdk-core:1.+'
 
