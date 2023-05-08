@@ -1,7 +1,4 @@
 
-## Release Notes
-
----
 ## 6.8.2
 Release date: 2022-Aug-31
 
