@@ -55,16 +55,6 @@ Code Sample to handle deeplinking data:
     });
 ```
 
-In Addition add the following code to any activity your app deeplinks into:
-
-```java
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-    ...
-        AppsFlyerLib.getInstance().setPluginDeepLinkData(getIntent());
-    }
-```
-
 
 ###  <a id="android-deeplink"> Android Deeplink Setup
     
