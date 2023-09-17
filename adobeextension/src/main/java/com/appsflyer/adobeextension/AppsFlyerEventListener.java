@@ -42,7 +42,7 @@ public class AppsFlyerEventListener extends ExtensionListener {
             return;
         }
 
-        if (event.getType().equals("com.adobe.eventtype.generic.track") && event.getSource().equals("com.adobe.eventsource.requestcontent")) {
+        if (event.getType().equalsIgnoreCase("com.adobe.eventtype.generic.track") && event.getSource().equalsIgnoreCase("com.adobe.eventsource.requestcontent")) {
             Map<String,Object> eventData = event.getEventData();
             Object nestedData = eventData.get("contextdata");
             Object actionEventName = eventData.get(ACTION);
