@@ -1,3 +1,13 @@
+## 6.12.2 
+ Release date: *2023-08-21*
+
+Adobe Extension (Android) >> Update Plugin to v6.12.2
+
+## 6.10.3 
+ Release date: *2023-05-09*
+
+Adobe Android >> Create release pipeline 
+
 
 ## 6.8.2
 Release date: 2022-Aug-31
