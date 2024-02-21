@@ -35,7 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class AppsFlyerAdobeExtension extends Extension {
-    public static Boolean manual = false;
+    public static boolean manual = false;
     public static String eventSetting = "";
     static Application af_application;
     static WeakReference<Activity> af_activity;
