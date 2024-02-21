@@ -35,6 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class AppsFlyerAdobeExtension extends Extension {
+    public static Boolean manual = false;
     public static String eventSetting = "";
     static Application af_application;
     static WeakReference<Activity> af_activity;
@@ -243,7 +244,7 @@ public class AppsFlyerAdobeExtension extends Extension {
     }
 
     private void startSDK() {
-        if (sdkStared) {
+        if (sdkStared || AppsFlyerAdobeExtension.manual) {
             return;
         }
         if (af_activity != null && af_activity.get() != null) {
