@@ -30,7 +30,7 @@ Since users may or may not have the mobile app installed, there are 2 types of d
 
 For more info please check out the [OneLink™ Deep Linking Guide](https://support.appsflyer.com/hc/en-us/articles/208874366-OneLink-Deep-Linking-Guide#Intro).
 
-Also, Check out the deferred deeplinkg guide from the AppFlyer knowledge base [here](https://support.appsflyer.com/hc/en-us/articles/207032096-Accessing-AppsFlyer-Attribution-Conversion-Data-from-the-SDK-Deferred-Deeplinking-#Introduction).
+Also, Check out the deferred deeplinkg guide from the AppFlyer knowledge base [here](https://support.appsflyer.com/hc/en-us/articles/208874366-OneLink-links-and-experiences#deep-linking-and-deferred-deep-linking).
 
 Code Sample to handle deeplinking data:
 
